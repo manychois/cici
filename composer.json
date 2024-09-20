@@ -1,0 +1,53 @@
+{
+  "name": "manychois/cici",
+  "autoload": {
+    "psr-4": {
+      "Manychois\\Cici\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Manychois\\CiciTests\\UnitTests\\": "tests/unit-tests"
+    }
+  },
+  "authors": [
+    {
+      "name": "Siu Pang Tommy Choi",
+      "email": "manychois@manychois.com.au"
+    }
+  ],
+  "require": {
+    "php": ">=8.3"
+  },
+  "require-dev": {
+    "escapestudios/symfony2-coding-standard": "^3.13",
+    "phpstan/extension-installer": "^1.4.2",
+    "phpstan/phpstan": "^1.12.0",
+    "phpstan/phpstan-phpunit": "^1.4.0",
+    "phpstan/phpstan-strict-rules": "^1.6.0",
+    "phpunit/phpunit": "^11.3.1",
+    "slevomat/coding-standard": "^8.15.0",
+    "squizlabs/php_codesniffer": "^3.10.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "scripts": {
+    "test": [
+      "@putenv XDEBUG_MODE=coverage",
+      "phpunit"
+    ],
+    "phpcs": "phpcs --standard=phpcs.xml -s",
+    "phpcbf": "phpcbf --standard=phpcs.xml || true",
+    "phpstan": "phpstan analyse -c phpstan.dist.neon || true",
+    "phpstan-watch": "phpstan analyse -c phpstan.dist.neon --watch",
+    "code": [
+      "@phpcbf",
+      "@phpcs",
+      "@phpstan"
+    ]
+  }
+}
