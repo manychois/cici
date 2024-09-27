@@ -51,23 +51,6 @@ class TokenStream
     }
 
     /**
-     * Consumes the next token from the token stream.
-     *
-     * @return AbstractToken The consumed token.
-     */
-    public function consume(): AbstractToken
-    {
-        if ($this->position >= $this->length) {
-            throw new \OutOfBoundsException('The end of the token stream has been reached.');
-        }
-
-        $token = $this->tokens[$this->position];
-        $this->position++;
-
-        return $token;
-    }
-
-    /**
      * Checks whether there is more token to consume.
      *
      * @return bool `true` if there is more token to consume; otherwise, `false`.
@@ -87,7 +70,7 @@ class TokenStream
     public function recordParseException(string $message): ParseException
     {
         $token = $this->position < $this->length ? $this->tokens[$this->position] : null;
-        $ex = new ParseException($message, $token?->offset ?? $this->textLength);
+        $ex = new ParseException($message, $token?->position ?? $this->textLength);
         $this->errors->add($ex);
 
         return $ex;
@@ -111,5 +94,22 @@ class TokenStream
         }
 
         return $hasWs;
+    }
+
+    /**
+     * Consumes the next token from the token stream, if there is any.
+     *
+     * @return AbstractToken|null The consumed token, or `null` if there is no more token.
+     */
+    public function tryConsume(): ?AbstractToken
+    {
+        if ($this->position >= $this->length) {
+            return null;
+        }
+
+        $token = $this->tokens[$this->position];
+        $this->position++;
+
+        return $token;
     }
 }

@@ -447,7 +447,7 @@ class TokenizerTest extends TestCase
         $tokenStream = $tokenizer->convertToTokenStream($textStream, true);
         $tokens = [];
         while ($tokenStream->hasMore()) {
-            $tokens[] = $tokenStream->consume();
+            $tokens[] = $tokenStream->tryConsume();
         }
         self::assertSame($expectedJson, Json::encode($tokens));
     }
@@ -460,7 +460,7 @@ class TokenizerTest extends TestCase
         $tokenStream = $tokenizer->convertToTokenStream($textStream, true);
         $tokens = [];
         while ($tokenStream->hasMore()) {
-            $tokens[] = $tokenStream->consume();
+            $tokens[] = $tokenStream->tryConsume();
         }
         $expectedJson = '[' . \implode(
             ',',

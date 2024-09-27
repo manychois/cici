@@ -387,13 +387,13 @@ class Tokenizer
         if ($regexResult->success) {
             $unit = $this->consumeIdentSequence($textStream);
 
-            return new DimensionToken($number->value, $unit, $number->isInt, $number->hasSign, $number->offset);
+            return new DimensionToken($number->value, $unit, $number->isInt, $number->hasSign, $number->position);
         }
 
         if ($textStream->peek(1) === '%') {
             $textStream->position++;
 
-            return new PercentageToken($number->value, $number->isInt, $number->hasSign, $number->offset);
+            return new PercentageToken($number->value, $number->isInt, $number->hasSign, $number->position);
         }
 
         return $number;

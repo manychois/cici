@@ -12,15 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 class TokenStreamTest extends TestCase
 {
-    public function testConsume_eofThrowsException(): void
-    {
-        $this->expectException(\OutOfBoundsException::class);
-        $this->expectExceptionMessage('The end of the token stream has been reached.');
-        $errors = new ParseExceptionCollection();
-        $tokenStream = new TokenStream([], 0, $errors);
-        $tokenStream->consume();
-    }
-
     public function testRecordParseException(): void
     {
         $errors = new ParseExceptionCollection();
@@ -54,6 +45,6 @@ class TokenStreamTest extends TestCase
         $hasWs = $tokenStream->skipWhitespace();
         $this->assertFalse($hasWs);
         $this->assertSame(2, $tokenStream->position);
-        $this->assertSame($id, $tokenStream->consume());
+        $this->assertSame($id, $tokenStream->tryConsume());
     }
 }
