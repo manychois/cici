@@ -41,32 +41,6 @@ class SelectorParserTest extends TestCase
         yield [':first-child', 'null', 1];
     }
 
-    public static function provideTryParsePseudoClassSelector(): \Generator
-    {
-        $args = \implode(',', [
-            '{"hasSign":false,"isInt":true,"type":"dimension","unit":"n","value":2}',
-            '{"hasSign":true,"isInt":true,"type":"number","value":1}',
-            '" "',
-            '{"type":"ident","value":"of"}',
-            '" "',
-            '{"type":"delim","value":"."}',
-            '{"type":"ident","value":"active"}',
-        ]);
-
-        yield [':unknown(2n+1 of .active)', \sprintf(
-            '{"args":[%s],"name":"unknown","type":"pseudo-class"}',
-            $args
-        ), 10, ];
-
-        yield [':"bad token"', 'null', 1];
-    }
-
-    public static function provideTryParsePseudoClassSelector_funcNotClosed(): \Generator
-    {
-        yield [':first-child(2n+1', 4];
-        yield [':unknown("' . "\n" . '")', 2];
-    }
-
     public static function provideParseAttributeSelector(): \Generator
     {
         yield [
@@ -78,7 +52,7 @@ class SelectorParserTest extends TestCase
         yield [
             '[|type=text i]',
             '{"isCaseSensitive":false,"matcher":"=","type":"attribute","value":"text",' .
-            '"wqName":{"localName":"type","prefix":null}}',
+                '"wqName":{"localName":"type","prefix":null}}',
             8,
         ];
 
@@ -91,7 +65,7 @@ class SelectorParserTest extends TestCase
         yield [
             '[*|lang|= en s]',
             '{"isCaseSensitive":true,"matcher":"|=","type":"attribute","value":"en",' .
-            '"wqName":{"localName":"lang","prefix":"*"}}',
+                '"wqName":{"localName":"lang","prefix":"*"}}',
             11,
         ];
 
@@ -112,6 +86,154 @@ class SelectorParserTest extends TestCase
             '{"matcher":"*=","type":"attribute","value":"example","wqName":{"localName":"data-label"}}',
             7,
         ];
+    }
+
+    public static function provideParseAttributeSelector_invalid(): \Generator
+    {
+        yield ['[', 'Missing attribute name.'];
+        yield ['[name', 'Attribute selector is not closed.'];
+        yield ['[name[]]', 'Invalid attribute matcher.'];
+        yield ['[name?"value"]', 'Invalid attribute matcher.'];
+        yield ['[name^"value"]', 'Invalid attribute matcher.'];
+        yield ['[name=]', 'Missing attribute value.'];
+        yield ['[name=a t]', 'Invalid attribute modifier.'];
+        yield ['[name=a i j]', 'Invalid attribute selector.'];
+    }
+
+    public static function provideTryParseSubclassSelector(): \Generator
+    {
+        yield ['#abc', '{"id":"abc","type":"id"}', 1];
+        yield ['.abc', '{"className":"abc","type":"class"}', 2];
+        yield ['[name]', '{"matcher":"","type":"attribute","wqName":{"localName":"name"}}', 3];
+        yield [':first-child', '{"name":"first-child","type":"pseudo-class"}', 2];
+        yield ['!important', 'null', 0];
+    }
+
+    public static function provideTryParseSubclassSelector_invalid(): \Generator
+    {
+        yield ['#123', 'Invalid ID selector.'];
+        yield ['.!', 'Invalid class selector.'];
+    }
+
+    public static function provideTryParseTypeSelector(): \Generator
+    {
+        yield ['div', '{"type":"type","wqName":{"localName":"div"}}', 1];
+        yield ['*', '{"type":"type","wqName":{"localName":"*"}}', 1];
+        yield ['|div', '{"type":"type","wqName":{"localName":"div","prefix":null}}', 2];
+        yield ['*|div', '{"type":"type","wqName":{"localName":"div","prefix":"*"}}', 3];
+        yield ['svg|title', '{"type":"type","wqName":{"localName":"title","prefix":"svg"}}', 3];
+        yield ['*|*', '{"type":"type","wqName":{"localName":"*","prefix":"*"}}', 3];
+        yield ['123', 'null', 0];
+    }
+
+    public static function provideTryParsePseudoCompoundSelector(): \Generator
+    {
+        yield [
+            '::file-selector-button:hover',
+            '{"selectors":[' . '{"name":"file-selector-button","type":"pseudo-element"},' .
+                '{"name":"hover","type":"pseudo-class"}],"type":"and"}',
+            5,
+        ];
+
+        yield [':before', '{"name":"before","type":"legacy-pseudo-element"}', 2];
+        yield [':123', 'null', 0];
+        yield ['div', 'null', 0];
+        yield ['::after:123', '{"name":"after","type":"pseudo-element"}', 3];
+        yield ['::after!', '{"name":"after","type":"pseudo-element"}', 3];
+    }
+
+    public static function provideTryParseCompoundSelector(): \Generator
+    {
+        yield [
+            'div.active:hover',
+            '{"selectors":[{"type":"type","wqName":{"localName":"div"}},' .
+                '{"className":"active","type":"class"},' .
+                '{"name":"hover","type":"pseudo-class"}],"type":"compound"}',
+            5,
+        ];
+
+        yield ['::before', 'null', 0];
+    }
+
+    public static function provideTryParseComplexSelector(): \Generator
+    {
+        $c = static fn ($s) => '{"selectors":[' . $s . '],"type":"compound"}';
+        $and = static fn ($s) => '{"selectors":[' . $s . '],"type":"and"}';
+
+        yield [
+            'div > :hover [required]',
+            false,
+            '{"combinators":[">"," "],"selectors":[' .
+                $c('{"type":"type","wqName":{"localName":"div"}}') . ',' .
+                $c('{"name":"hover","type":"pseudo-class"}') . ',' .
+                $c('{"matcher":"","type":"attribute","wqName":{"localName":"required"}}') .
+                '],"type":"complex"}',
+            10,
+        ];
+
+        yield [
+            'p+::first-letter:hover',
+            false,
+            '{"combinators":["+"],"selectors":[' .
+                $c('{"type":"type","wqName":{"localName":"p"}}') . ',' .
+                $and('{"name":"first-letter","type":"pseudo-element"},{"name":"hover","type":"pseudo-class"}') .
+                '],"type":"complex"}',
+            7,
+        ];
+
+        yield [
+            'div.active',
+            false,
+            $c('{"type":"type","wqName":{"localName":"div"}},{"className":"active","type":"class"}'),
+            3,
+        ];
+
+        yield [
+            'main  ~  ::selection::first-letter',
+            false,
+            '{"combinators":["~"],"selectors":[' .
+                $c('{"type":"type","wqName":{"localName":"main"}}') . ',' .
+                $and('{"name":"selection","type":"pseudo-element"},{"name":"first-letter","type":"pseudo-element"}') .
+                '],"type":"complex"}',
+            10,
+        ];
+
+        yield [
+            'a || ?',
+            false,
+            $c('{"type":"type","wqName":{"localName":"a"}}'),
+            1,
+        ];
+
+        yield [
+            'a || b::first-line',
+            true,
+            '{"combinators":["||"],"selectors":[' .
+                $c('{"type":"type","wqName":{"localName":"a"}}') . ',' .
+                $c('{"type":"type","wqName":{"localName":"b"}}') .
+                '],"type":"complex"}',
+            6,
+        ];
+
+        yield ['!', false, 'null', 0];
+        yield ['a ! b', false, $c('{"type":"type","wqName":{"localName":"a"}}'), 1];
+    }
+
+    public static function provideTryParseCommaSeparatedList(): \Generator
+    {
+        yield [
+            'a, [href] ,.link',
+            '{"selectors":[' .
+                '{"selectors":[{"type":"type","wqName":{"localName":"a"}}],"type":"compound"},' .
+                '{"selectors":[{"matcher":"","type":"attribute","wqName":{"localName":"href"}}],"type":"compound"},' .
+                '{"selectors":[{"className":"link","type":"class"}],"type":"compound"}' .
+                '],"type":"or"}',
+            10,
+        ];
+
+        yield ['!', 'null', 0];
+
+        yield ['#id-1', '{"selectors":[{"id":"id-1","type":"id"}],"type":"compound"}', 1];
     }
 
     #[DataProvider('provideTryParseWqName')]
@@ -138,29 +260,6 @@ class SelectorParserTest extends TestCase
         $this->assertSame($indexAfter, $tokenStream->position);
     }
 
-    #[DataProvider('provideTryParsePseudoClassSelector')]
-    public function testTryParsePseudoClassSelector(string $input, string $expectedJson, int $indexAfter): void
-    {
-        $tokenStream = $this->convertToTokenStream($input);
-        // Consume the first colon
-        $tokenStream->tryConsume();
-        $pseudoClass = $this->parser->tryParsePseudoClassSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($pseudoClass));
-        $this->assertSame($indexAfter, $tokenStream->position);
-    }
-
-    #[DataProvider('provideTryParsePseudoClassSelector_funcNotClosed')]
-    public function testTryParsePseudoClassSelector_funcNotClosed(string $input, int $indexAfter): void
-    {
-        $this->expectException(ParseException::class);
-        $this->expectExceptionMessage('The function is not closed.');
-        $tokenStream = $this->convertToTokenStream($input);
-        // Consume the first colon
-        $tokenStream->tryConsume();
-        $this->parser->tryParsePseudoClassSelector($tokenStream);
-        $this->assertSame($indexAfter, $tokenStream->position);
-    }
-
     #[DataProvider('provideParseAttributeSelector')]
     public function testParseAttributeSelector(string $input, string $expectedJson, int $indexAfter): void
     {
@@ -169,6 +268,81 @@ class SelectorParserTest extends TestCase
         $tokenStream->tryConsume();
         $attributeSelector = $this->parser->parseAttributeSelector($tokenStream);
         $this->assertSame($expectedJson, Json::encode($attributeSelector));
+        $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    #[DataProvider('provideParseAttributeSelector_invalid')]
+    public function testParseAttributeSelector_invalid(string $input, string $expectedEx): void
+    {
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage($expectedEx);
+        $tokenStream = $this->convertToTokenStream($input);
+        // Consume the first left square bracket
+        $tokenStream->tryConsume();
+        $this->parser->parseAttributeSelector($tokenStream);
+    }
+
+    #[DataProvider('provideTryParseSubclassSelector')]
+    public function testTryParseSubclassSelector(string $input, string $expectedJson, int $indexAfter): void
+    {
+        $tokenStream = $this->convertToTokenStream($input);
+        $subclassSelector = $this->parser->tryParseSubclassSelector($tokenStream);
+        $this->assertSame($expectedJson, Json::encode($subclassSelector));
+        $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    #[DataProvider('provideTryParseSubclassSelector_invalid')]
+    public function testTryParseSubclassSelector_invalid(string $input, string $expectedError): void
+    {
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage($expectedError);
+        $tokenStream = $this->convertToTokenStream($input);
+        $this->parser->tryParseSubclassSelector($tokenStream);
+    }
+
+    #[DataProvider('provideTryParseTypeSelector')]
+    public function testTryParseTypeSelector(string $input, string $expectedJson, int $indexAfter): void
+    {
+        $tokenStream = $this->convertToTokenStream($input);
+        $typeSelector = $this->parser->tryParseTypeSelector($tokenStream);
+        $this->assertSame($expectedJson, Json::encode($typeSelector));
+        $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    #[DataProvider('provideTryParsePseudoCompoundSelector')]
+    public function testTryParsePseudoCompoundSelector(string $input, string $expectedJson, int $indexAfter): void
+    {
+        $tokenStream = $this->convertToTokenStream($input);
+        $typeSelector = $this->parser->tryParsePseudoCompoundSelector($tokenStream);
+        $this->assertSame($expectedJson, Json::encode($typeSelector));
+        $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    #[DataProvider('provideTryParseCompoundSelector')]
+    public function testTryParseCompoundSelector(string $input, string $expectedJson, int $indexAfter): void
+    {
+        $tokenStream = $this->convertToTokenStream($input);
+        $typeSelector = $this->parser->tryParseCompoundSelector($tokenStream, false);
+        $this->assertSame($expectedJson, Json::encode($typeSelector));
+        $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    #[DataProvider('provideTryParseComplexSelector')]
+    public function testTryParseComplexSelector(string $input, bool $real, string $expectedJson, int $indexAfter): void
+    {
+        $tokenStream = $this->convertToTokenStream($input);
+        $typeSelector = $this->parser->tryParseComplexSelector($tokenStream, $real, false);
+        $this->assertSame($expectedJson, Json::encode($typeSelector));
+        $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    #[DataProvider('provideTryParseCommaSeparatedList')]
+    public function testTryParseCommaSeparatedList(string $input, string $expectedJson, int $indexAfter): void
+    {
+        $tokenStream = $this->convertToTokenStream($input);
+        $parseComplexSelector = fn () => $this->parser->tryParseComplexSelector($tokenStream, false, false);
+        $typeSelector = $this->parser->tryParseCommaSeparatedList($tokenStream, $parseComplexSelector);
+        $this->assertSame($expectedJson, Json::encode($typeSelector));
         $this->assertSame($indexAfter, $tokenStream->position);
     }
 

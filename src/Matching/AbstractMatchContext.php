@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manychois\Cici\Matching;
 
 use Manychois\Cici\Parsing\WqName;
+use Manychois\Cici\Selectors\Combinator;
 
 /**
  * Represents all information needed to match a selector against a DOM tree.
@@ -49,6 +50,46 @@ abstract class AbstractMatchContext
     abstract public function getAttributeValue(object $element, string|WqName $wqName): ?string;
 
     /**
+     * Loops through all the children of an element.
+     *
+     * @param TNode $parentNode The parent node.
+     *
+     * @return \Generator<int,TNode> All the children.
+     */
+    abstract public function loopChildren(object $parentNode): \Generator;
+
+    /**
+     * Loops through all the descendant elements of an element.
+     *
+     * @param TNode $parentNode  The parent node.
+     * @param bool  $includeSelf `true` to include the parent node itself if it is an element;
+     *                           otherwise, `false`.
+     *
+     * @return \Generator<int,TNode> All the descendant elements.
+     */
+    abstract public function loopDescendants(object $parentNode, bool $includeSelf): \Generator;
+
+    /**
+     * Loops through all the possible elements that can be on the left side of a combinator.
+     *
+     * @param TNode      $element    The element on the right side of the combinator.
+     * @param Combinator $combinator The combinator.
+     *
+     * @return \Generator<int,TNode> All the possible elements that can be on the left side of a combinator.
+     */
+    abstract public function loopLeftCandidates(object $element, Combinator $combinator): \Generator;
+
+    /**
+     * Loops through all the possible elements that can be on the right side of a combinator.
+     *
+     * @param TNode      $node       The node on the left side of the combinator.
+     * @param Combinator $combinator The combinator.
+     *
+     * @return \Generator<int,TNode> All the possible elements that can be on the right side of a combinator.
+     */
+    abstract public function loopRightCandidates(object $node, Combinator $combinator): \Generator;
+
+    /**
      * Matches the type of an element.
      *
      * @param TNode  $element The element.
@@ -57,4 +98,14 @@ abstract class AbstractMatchContext
      * @return bool `true` if the element matches the type; otherwise, `false`.
      */
     abstract public function matchElementType(object $element, WqName $wqName): bool;
+
+    /**
+     * Checks if an element matches the default namespace declared in the scope.
+     * If the default namespace is not declared, the element is considered to match.
+     *
+     * @param TNode $element The element.
+     *
+     * @return bool `true` if the element matches the default namespace; otherwise, `false`.
+     */
+    abstract public function matchDefaultNamespace(object $element): bool;
 }

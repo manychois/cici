@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace Manychois\Cici\Parsing;
 
-use Manychois\Cici\Selectors\AbstractPseudoSelector;
+use Manychois\Cici\Exceptions\ParseExceptionCollection;
 use Manychois\Cici\Selectors\AbstractSelector;
 use Manychois\Cici\Selectors\AttributeSelector;
 use Manychois\Cici\Selectors\AttrMatcher;
 use Manychois\Cici\Selectors\ClassSelector;
+use Manychois\Cici\Selectors\Combinator;
+use Manychois\Cici\Selectors\ComplexSelector;
+use Manychois\Cici\Selectors\CompoundSelector;
+use Manychois\Cici\Selectors\ForgivingSelectorList;
 use Manychois\Cici\Selectors\IdSelector;
 use Manychois\Cici\Selectors\LegacyPseudoElementSelector;
 use Manychois\Cici\Selectors\LogicalSelector;
 use Manychois\Cici\Selectors\PseudoElementSelector;
+use Manychois\Cici\Selectors\RelativeSelector;
 use Manychois\Cici\Selectors\TypeSelector;
-use Manychois\Cici\Selectors\UnknownPseudoClassSelector;
 use Manychois\Cici\Tokenization\Tokens\AbstractToken;
 use Manychois\Cici\Tokenization\Tokens\BadStringToken;
 use Manychois\Cici\Tokenization\Tokens\BadUrlToken;
@@ -36,10 +40,11 @@ class SelectorParser
      * Consumes a list of tokens which are part of the `<any-value>` production.
      *
      * @param TokenStream $tokenStream The token stream to consume.
+     * @param bool        $exclComma   Whether to stop at a comma.
      *
      * @return array<int,\Manychois\Cici\Tokenization\Tokens\AbstractToken> The consumed tokens, if any.
      */
-    public function consumeAnyValue(TokenStream $tokenStream): array
+    public function consumeAnyValue(TokenStream $tokenStream, bool $exclComma): array
     {
         $values = [];
         $stop = false;
@@ -60,6 +65,10 @@ class SelectorParser
                     || $token->value === Symbol::LeftCurlyBracket
                 ) {
                     $bracketOpen[$token->value->value]++;
+                } elseif ($token->value === Symbol::Comma) {
+                    if ($exclComma && $bracketOpen['('] === 0 && $bracketOpen['['] === 0 && $bracketOpen['{'] === 0) {
+                        $stop = true;
+                    }
                 } else {
                     $correspondingLeftBracket = match ($token->value) {
                         Symbol::RightParenthesis => '(',
@@ -195,69 +204,84 @@ class SelectorParser
     }
 
     /**
-     * Parses a compound selector, if possible.
+     * Parses a forgiving selector list.
      *
      * @param TokenStream $tokenStream The token stream to parse.
      *
-     * @return LogicalSelector|null The parsed compound selector, or null if the token stream does not represent a
-     * compound selector.
+     * @return ForgivingSelectorList The parsed forgiving selector list.
      */
-    public function tryParseCompoundSelector(TokenStream $tokenStream): ?LogicalSelector
+    public function parseForgivingSelectorList(TokenStream $tokenStream): ForgivingSelectorList
     {
-        $selectors = [];
-        $type = $this->tryParseTypeSelector($tokenStream);
-        if ($type !== null) {
-            $selectors[] = $type;
-        }
+        $errorsToIgnore = new ParseExceptionCollection();
+        $segments = [];
         while (true) {
-            $subclass = $this->tryParseSubclassSelector($tokenStream);
-            if ($subclass === null) {
+            $anyValue = $this->consumeAnyValue($tokenStream, true);
+            $segments[] = new TokenStream($anyValue, $errorsToIgnore);
+
+            $token = $tokenStream->tryConsume();
+            if ($token === null) {
                 break;
             }
-            $selectors[] = $subclass;
+
+            if ($token instanceof SymbolToken && $token->value === Symbol::Comma) {
+                continue;
+            }
         }
 
-        if (\count($selectors) === 0) {
-            return null;
+        $selectors = [];
+        foreach ($segments as $segment) {
+            try {
+                $segment->skipWhitespace();
+                $complex = $this->tryParseComplexSelector($segment, true, true);
+                if ($complex !== null) {
+                    $segment->skipWhitespace();
+                    if (!$segment->hasMore()) {
+                        $selectors[] = $complex;
+                    }
+                }
+            } catch (\Throwable) {
+                continue;
+            }
         }
 
-        return new LogicalSelector(true, $selectors);
+        return new ForgivingSelectorList($selectors);
     }
 
     /**
-     * Parses a pseudo-class selector, if possible.
-     * This assumes the colon (:) has already been consumed.
+     * Parses a combinator, if possible.
+     * Do not skip whitespace before calling this method, as it will be parsed as a descendant combinator.
      *
      * @param TokenStream $tokenStream The token stream to parse.
      *
-     * @return AbstractPseudoSelector|null The parsed pseudo-class selector, or null if the selector is not a
-     * pseudo-class selector.
+     * @return Combinator|null The parsed combinator, or null if the token stream does not represent a combinator.
      */
-    public function tryParsePseudoClassSelector(TokenStream $tokenStream): ?AbstractPseudoSelector
+    public function tryParseCombinator(TokenStream $tokenStream): ?Combinator
     {
         $startIndex = $tokenStream->position;
+        $hasWs = $tokenStream->skipWhitespace();
         $token = $tokenStream->tryConsume();
-
-        if ($token instanceof IdentToken) {
-            $name = \strtolower($token->value);
-
-            return new UnknownPseudoClassSelector($name, false);
+        if ($token instanceof DelimToken) {
+            $combinator = match ($token->value) {
+                '>' => Combinator::Child,
+                '+' => Combinator::NextSibling,
+                '~' => Combinator::SubsequentSibling,
+                '|' => Combinator::Column,
+                default => null,
+            };
+            if ($combinator === Combinator::Column) {
+                $token = $tokenStream->tryConsume();
+                if ($token instanceof DelimToken && $token->value === '|') {
+                    return Combinator::Column;
+                }
+            } elseif ($combinator !== null) {
+                return $combinator;
+            }
         }
-
-        if ($token instanceof FunctionToken) {
-            $name = \strtolower($token->value);
-            $anyValue = $this->consumeAnyValue($tokenStream);
-            $closeToken = $tokenStream->tryConsume();
-
-            if ($closeToken instanceof SymbolToken && $closeToken->value === Symbol::RightParenthesis) {
-                return new UnknownPseudoClassSelector($name, true, ...$anyValue);
-            }
-
-            if ($closeToken !== null) {
-                $tokenStream->position--;
-            }
-
-            throw $tokenStream->recordParseException('The function is not closed.');
+        if ($token !== null) {
+            $tokenStream->position--;
+        }
+        if ($hasWs) {
+            return Combinator::Descendant;
         }
 
         $tokenStream->position = $startIndex;
@@ -266,17 +290,190 @@ class SelectorParser
     }
 
     /**
+     * Parses a comma-separated list of selectors.
+     *
+     * @param TokenStream $tokenStream The token stream to parse.
+     * @param \Closure    $parseInner  The function to parse each inner selector.
+     *
+     * @return AbstractSelector|null The parsed selector list, or null if the token stream does not represent a
+     * selector list.
+     */
+    public function tryParseCommaSeparatedList(TokenStream $tokenStream, \Closure $parseInner): ?AbstractSelector
+    {
+        $restoreIndex = $tokenStream->position;
+        $selectors = [];
+        while (true) {
+            $tokenStream->skipWhitespace();
+            $selector = $parseInner();
+            if ($selector === null) {
+                break;
+            }
+            \assert($selector instanceof AbstractSelector);
+            $selectors[] = $selector;
+            $restoreIndex = $tokenStream->position;
+            $tokenStream->skipWhitespace();
+            $token = $tokenStream->tryConsume();
+            if (!($token instanceof SymbolToken && $token->value === Symbol::Comma)) {
+                break;
+            }
+        }
+
+        $tokenStream->position = $restoreIndex;
+        if (\count($selectors) === 0) {
+            return null;
+        }
+
+        if (\count($selectors) === 1) {
+            return $selectors[0];
+        }
+
+        return new LogicalSelector(false, $selectors);
+    }
+
+    /**
+     * Parses a complex selector, if possible.
+     *
+     * @param TokenStream $tokenStream            The token stream to parse.
+     * @param bool        $real                   Whether to parse a real complex selector.
+     * @param bool        $ignoreDefaultNamespace Whether to ignore the default namespace.
+     *
+     * @return AbstractSelector|null The parsed complex selector, or null if the token stream does not represent a
+     * complex selector.
+     */
+    public function tryParseComplexSelector(
+        TokenStream $tokenStream,
+        bool $real,
+        bool $ignoreDefaultNamespace
+    ): ?AbstractSelector {
+        $selectors = [];
+        $combinators = [];
+
+        $unit = $real
+            ? $this->tryParseCompoundSelector($tokenStream, $ignoreDefaultNamespace)
+            : $this->tryParseComplexSelectorUnit($tokenStream, $ignoreDefaultNamespace);
+        if ($unit === null) {
+            return null;
+        }
+        $selectors[] = $unit;
+        $combinators = [];
+        while (true) {
+            $index = $tokenStream->position;
+            $combinator = $this->tryParseCombinator($tokenStream);
+            if ($combinator === null) {
+                break;
+            }
+            $tokenStream->skipWhitespace();
+            $unit = $real
+                ? $this->tryParseCompoundSelector($tokenStream, $ignoreDefaultNamespace)
+                : $this->tryParseComplexSelectorUnit($tokenStream, $ignoreDefaultNamespace);
+            if ($unit === null) {
+                $tokenStream->position = $index;
+
+                break;
+            }
+            $combinators[] = $combinator;
+            $selectors[] = $unit;
+        }
+
+        if (\count($selectors) === 1) {
+            return $selectors[0];
+        }
+
+        return new ComplexSelector($selectors, $combinators);
+    }
+
+    /**
+     * Parses a complex selector unit, if possible.
+     *
+     * @param TokenStream $tokenStream            The token stream to parse.
+     * @param bool        $ignoreDefaultNamespace Whether to ignore the default namespace.
+     *
+     * @return AbstractSelector|null The parsed complex selector unit, or null if the token stream does not represent a
+     * complex selector unit.
+     */
+    public function tryParseComplexSelectorUnit(
+        TokenStream $tokenStream,
+        bool $ignoreDefaultNamespace
+    ): ?AbstractSelector {
+        $selectors = [];
+        $compound = $this->tryParseCompoundSelector($tokenStream, $ignoreDefaultNamespace);
+        if ($compound !== null) {
+            $selectors[] = $compound;
+        }
+
+        while (true) {
+            $pseudo = $this->tryParsePseudoCompoundSelector($tokenStream);
+            if ($pseudo === null) {
+                break;
+            }
+            if ($pseudo instanceof LogicalSelector && $pseudo->isAnd) {
+                $selectors = \array_merge($selectors, $pseudo->selectors);
+            } else {
+                $selectors[] = $pseudo;
+            }
+        }
+
+        if (\count($selectors) === 0) {
+            return null;
+        }
+        if (\count($selectors) === 1) {
+            return $selectors[0];
+        }
+
+        return new LogicalSelector(true, $selectors);
+    }
+
+    /**
+     * Parses a compound selector, if possible.
+     *
+     * @param TokenStream $tokenStream            The token stream to parse.
+     * @param bool        $ignoreDefaultNamespace Whether to ignore the default namespace.
+     *
+     * @return CompoundSelector|null The parsed compound selector, or null if the token stream does not represent a
+     * compound selector.
+     */
+    public function tryParseCompoundSelector(TokenStream $tokenStream, bool $ignoreDefaultNamespace): ?CompoundSelector
+    {
+        $subclasses = [];
+        $type = $this->tryParseTypeSelector($tokenStream);
+        while (true) {
+            $subclass = $this->tryParseSubclassSelector($tokenStream);
+            if ($subclass === null) {
+                break;
+            }
+            $subclasses[] = $subclass;
+        }
+
+        if ($type === null && \count($subclasses) === 0) {
+            return null;
+        }
+
+        return new CompoundSelector($type, $subclasses, $ignoreDefaultNamespace);
+    }
+
+    /**
      * Parses a compound selector, if possible.
      *
      * @param TokenStream $tokenStream The token stream to parse.
      *
-     * @return LogicalSelector|null The parsed compound selector, or null if the token stream does not represent a
+     * @return AbstractSelector|null The parsed compound selector, or null if the token stream does not represent a
      * compound selector.
      */
-    public function tryParsePseudoCompoundSelector(TokenStream $tokenStream): ?LogicalSelector
+    public function tryParsePseudoCompoundSelector(TokenStream $tokenStream): ?AbstractSelector
     {
+        $token = $tokenStream->tryConsume();
+        if (!($token instanceof SymbolToken && $token->value === Symbol::Colon)) {
+            if ($token !== null) {
+                $tokenStream->position--;
+            }
+
+            return null;
+        }
+
         $pseudoElement = $this->tryParsePseudoElementSelector($tokenStream);
         if ($pseudoElement === null) {
+            $tokenStream->position--;
+
             return null;
         }
 
@@ -285,12 +482,28 @@ class SelectorParser
          */
         $selectors = [$pseudoElement];
 
+        $psp = new PseudoSelectorParser($this);
         while (true) {
-            $pseudoClass = $this->tryParsePseudoClassSelector($tokenStream);
+            $token = $tokenStream->tryConsume();
+            if (!($token instanceof SymbolToken && $token->value === Symbol::Colon)) {
+                if ($token !== null) {
+                    $tokenStream->position--;
+                }
+
+                break;
+            }
+
+            $pseudoClass = $psp->tryParsePseudoClassSelector($tokenStream);
             if ($pseudoClass === null) {
+                $tokenStream->position--;
+
                 break;
             }
             $selectors[] = $pseudoClass;
+        }
+
+        if (\count($selectors) === 1) {
+            return $selectors[0];
         }
 
         return new LogicalSelector(true, $selectors);
@@ -318,7 +531,8 @@ class SelectorParser
         }
 
         if ($token instanceof SymbolToken && $token->value === Symbol::Colon) {
-            $pseudoClass = $this->tryParsePseudoClassSelector($tokenStream);
+            $psp = new PseudoSelectorParser($this);
+            $pseudoClass = $psp->tryParsePseudoClassSelector($tokenStream);
             if ($pseudoClass !== null) {
                 return new PseudoElementSelector($pseudoClass->name, $pseudoClass->isFunctional, ...$pseudoClass->args);
             }
@@ -330,16 +544,32 @@ class SelectorParser
     }
 
     /**
-     * Parses a simple selector, if possible.
+     * Parses a relative selector, if possible.
      *
      * @param TokenStream $tokenStream The token stream to parse.
+     * @param bool        $real        Whether to parse a real relative selector.
      *
-     * @return AbstractSelector|null The parsed simple selector, or null if the token stream does not represent a simple
-     * selector.
+     * @return RelativeSelector|null The parsed relative selector, or null if the token stream does not represent a
+     * relative selector.
      */
-    public function tryParseSimpleSelector(TokenStream $tokenStream): ?AbstractSelector
+    public function tryParseRelativeSelector(TokenStream $tokenStream, bool $real): ?RelativeSelector
     {
-        return $this->tryParseTypeSelector($tokenStream) ?? $this->tryParseSubclassSelector($tokenStream);
+        $startIndex = $tokenStream->position;
+
+        $combinator = $this->tryParseCombinator($tokenStream);
+        if ($combinator === null) {
+            $combinator = Combinator::Descendant;
+        }
+
+        $tokenStream->skipWhitespace();
+        $complex = $this->tryParseComplexSelector($tokenStream, $real, false);
+        if ($complex === null) {
+            $tokenStream->position = $startIndex;
+
+            return null;
+        }
+
+        return new RelativeSelector($combinator, $complex);
     }
 
     /**
@@ -372,7 +602,7 @@ class SelectorParser
                 $tokenStream->position--;
             }
 
-            throw $tokenStream->recordParseException('Invalid class name.');
+            throw $tokenStream->recordParseException('Invalid class selector.');
         }
 
         if ($token instanceof SymbolToken) {
@@ -381,9 +611,12 @@ class SelectorParser
             }
 
             if ($token->value === Symbol::Colon) {
-                $pseudoClass = $this->tryParsePseudoClassSelector($tokenStream);
+                $psp = new PseudoSelectorParser($this);
+                $pseudoClass = $psp->tryParsePseudoClassSelector($tokenStream);
                 if ($pseudoClass === null) {
-                    throw $tokenStream->recordParseException('Invalid pseudo-class or pseudo-element selector.');
+                    $tokenStream->position--;
+
+                    return null;
                 }
 
                 return $pseudoClass;

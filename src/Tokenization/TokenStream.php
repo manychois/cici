@@ -23,10 +23,6 @@ class TokenStream
      */
     public readonly ParseExceptionCollection $errors;
     /**
-     * The length of the text being tokenized.
-     */
-    public readonly int $textLength;
-    /**
      * The current position in the token stream.
      */
     public int $position = 0;
@@ -38,14 +34,12 @@ class TokenStream
     /**
      * Creates a new instance of the TokenStream class.
      *
-     * @param array<int,AbstractToken> $tokens     The tokens to tokenize.
-     * @param int                      $textLength The length of the text being tokenized.
-     * @param ParseExceptionCollection $errors     The collection to hold parsing errors.
+     * @param array<int,AbstractToken> $tokens The tokens to tokenize.
+     * @param ParseExceptionCollection $errors The collection to hold parsing errors.
      */
-    public function __construct(array $tokens, int $textLength, ParseExceptionCollection $errors)
+    public function __construct(array $tokens, ParseExceptionCollection $errors)
     {
         $this->errors = $errors;
-        $this->textLength = $textLength;
         $this->tokens = $tokens;
         $this->length = \count($tokens);
     }
@@ -63,14 +57,22 @@ class TokenStream
     /**
      * Creates and stores a parse exception.
      *
-     * @param string $message The error message.
+     * @param string $message  The error message.
+     * @param int    $position The position of the error. If negative, the current string position is used.
      *
      * @return ParseException The created parse exception.
      */
-    public function recordParseException(string $message): ParseException
+    public function recordParseException(string $message, int $position = -1): ParseException
     {
-        $token = $this->position < $this->length ? $this->tokens[$this->position] : null;
-        $ex = new ParseException($message, $token?->position ?? $this->textLength);
+        if ($position < 0) {
+            if ($this->position < $this->length) {
+                $position = $this->tokens[$this->position]->position;
+            } else {
+                $count = \count($this->tokens);
+                $position = $count > 0 ? $this->tokens[$count - 1]->position : 0;
+            }
+        }
+        $ex = new ParseException($message, $position);
         $this->errors->add($ex);
 
         return $ex;
@@ -94,6 +96,27 @@ class TokenStream
         }
 
         return $hasWs;
+    }
+
+    /**
+     * Returns the first token searching from the current position to the end satisfies the given predicate.
+     *
+     * @param \Closure $predicate The predicate to check.
+     *
+     * @return AbstractToken|null The first token that satisfies the predicate, or `null` if no token satisfies the
+     * predicate.
+     *
+     * @psalm-param \Closure(AbstractToken):bool $predicate
+     */
+    public function first(\Closure $predicate): ?AbstractToken
+    {
+        for ($i = $this->position; $i < $this->length; $i++) {
+            if ($predicate($this->tokens[$i])) {
+                return $this->tokens[$i];
+            }
+        }
+
+        return null;
     }
 
     /**

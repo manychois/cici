@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Manychois\Cici\Selectors;
+namespace Manychois\Cici\Selectors\PseudoClasses;
 
 use Manychois\Cici\Matching\AbstractMatchContext;
+use Manychois\Cici\Selectors\AbstractPseudoSelector;
 use Manychois\Cici\Tokenization\Tokens\AbstractToken;
 
 /**

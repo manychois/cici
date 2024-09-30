@@ -30,7 +30,7 @@ class IdSelector extends AbstractSelector
     {
         return [
             'id' => $this->id,
-            'type' => 'class',
+            'type' => 'id',
         ];
     }
 

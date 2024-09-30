@@ -343,7 +343,7 @@ class Tokenizer
             $tokens[] = $this->convertToToken($textStream, $unicodeRangeAllowed);
         }
 
-        return new TokenStream($tokens, $textStream->length, $textStream->errors);
+        return new TokenStream($tokens, $textStream->errors);
     }
 
     /**

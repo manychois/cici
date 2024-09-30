@@ -15,16 +15,16 @@ class TokenStreamTest extends TestCase
     public function testRecordParseException(): void
     {
         $errors = new ParseExceptionCollection();
-        $tokenStream = new TokenStream([], 100, $errors);
+        $tokenStream = new TokenStream([], $errors);
         $tokenStream->recordParseException('End of input!');
         $this->assertCount(1, $errors);
         $error = $errors->get(0);
         $this->assertSame('End of input!', $error->getMessage());
-        $this->assertSame(100, $error->position);
+        $this->assertSame(0, $error->position);
 
         $errors = new ParseExceptionCollection();
         $token = new WhitespaceToken(20);
-        $tokenStream = new TokenStream([$token], 100, $errors);
+        $tokenStream = new TokenStream([$token], $errors);
         $tokenStream->recordParseException('Unknown whitespace.');
         $this->assertCount(1, $errors);
         $error = $errors->get(0);
@@ -38,7 +38,7 @@ class TokenStreamTest extends TestCase
         $ws1 = new WhitespaceToken(0);
         $ws2 = new WhitespaceToken(1);
         $id = new IdentToken('div', 2);
-        $tokenStream = new TokenStream([$ws1, $ws2, $id], 20, $errors);
+        $tokenStream = new TokenStream([$ws1, $ws2, $id], $errors);
         $hasWs = $tokenStream->skipWhitespace();
         $this->assertTrue($hasWs);
         $this->assertSame(2, $tokenStream->position);
