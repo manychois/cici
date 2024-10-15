@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manychois\Cici\Matching;
 
+use Generator;
 use Manychois\Cici\Parsing\WqName;
 use Manychois\Cici\Selectors\Combinator;
 
@@ -14,6 +15,8 @@ use Manychois\Cici\Selectors\Combinator;
  */
 class DomNodeMatchContext extends AbstractMatchContext
 {
+    private const NS_HTML = 'http://www.w3.org/1999/xhtml';
+
     /**
      * Creates a new instance of the match context.
      *
@@ -30,140 +33,23 @@ class DomNodeMatchContext extends AbstractMatchContext
 
     /**
      * @inheritDoc
-     *
-     * @return \Generator<int,\DOMElement>
      */
-    public function loopChildren(object $parentNode): \Generator
+    public function getAttributeValue(object $target, string|WqName $wqName): ?string
     {
-        \assert($parentNode instanceof \DOMDocument ||
-            $parentNode instanceof \DOMDocumentFragment ||
-        $parentNode instanceof \DOMElement);
-
-        foreach ($parentNode->childNodes as $child) {
-            if (!($child instanceof \DOMElement)) {
-                continue;
-            }
-
-            yield $child;
-        }
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @return \Generator<int,\DOMElement>
-     */
-    public function loopDescendants(object $parentNode, bool $includeSelf): \Generator
-    {
-        \assert($parentNode instanceof \DOMDocument ||
-            $parentNode instanceof \DOMDocumentFragment ||
-        $parentNode instanceof \DOMElement);
-
-        if ($includeSelf && $parentNode instanceof \DOMElement) {
-            $elements = [$parentNode];
-        } else {
-            /**
-             * @var array<\DOMElement> $elements
-             */
-            $elements = \iterator_to_array($this->loopChildren($parentNode));
+        if (!($target instanceof \DOMElement)) {
+            return null;
         }
 
-        while (\count($elements) > 0) {
-            $element = \array_shift($elements);
-            \assert($element instanceof \DOMElement);
-
-            yield $element;
-
-            /**
-             * @var array<\DOMElement> $children
-             */
-            $children = \iterator_to_array($this->loopChildren($element));
-            \array_splice($elements, 0, 0, $children);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @return \Generator<int,\DOMElement>
-     */
-    public function loopLeftCandidates(object $element, Combinator $combinator): \Generator
-    {
-        \assert($element instanceof \DOMElement);
-        if ($combinator === Combinator::Descendant) {
-            $current = $element->parentElement;
-            while ($current !== null) {
-                yield $current;
-
-                $current = $current->parentElement;
-            }
-        } elseif ($combinator === Combinator::Child) {
-            $current = $element->parentElement;
-            if ($current !== null) {
-                yield $current;
-            }
-        } elseif ($combinator === Combinator::NextSibling) {
-            $current = $element->previousElementSibling;
-            if ($current !== null) {
-                yield $current;
-            }
-        } elseif ($combinator === Combinator::SubsequentSibling) {
-            $current = $element->previousElementSibling;
-            while ($current !== null) {
-                yield $current;
-
-                $current = $current->previousElementSibling;
-            }
-        } else {
-            throw new \RuntimeException(\sprintf('Unsupported combinator "%s".', $combinator->value));
-        }
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @return \Generator<int,\DOMElement>
-     */
-    public function loopRightCandidates(object $node, Combinator $combinator): \Generator
-    {
-        if ($combinator === Combinator::Descendant) {
-            yield from $this->loopDescendants($node, false);
-        } elseif ($combinator === Combinator::Child) {
-            yield from $this->loopChildren($node);
-        } elseif ($combinator === Combinator::NextSibling) {
-            if ($node instanceof \DOMElement && $node->nextElementSibling !== null) {
-                yield $node->nextElementSibling;
-            }
-        } elseif ($combinator === Combinator::SubsequentSibling) {
-            if ($node instanceof \DOMElement) {
-                $current = $node->nextElementSibling;
-                while ($current !== null) {
-                    yield $current;
-
-                    $current = $current->nextElementSibling;
-                }
-            }
-        } else {
-            throw new \RuntimeException(\sprintf('Unsupported combinator "%s".', $combinator->value));
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAttributeValue(object $element, string|WqName $wqName): ?string
-    {
-        \assert($element instanceof \DOMElement);
         $prefix = \is_string($wqName) ? null : $wqName->prefix;
         $localName = \is_string($wqName) ? $wqName : $wqName->localName;
         $attr = null;
         if ($prefix === null) {
-            if ($element->hasAttribute($localName)) {
-                $attr = $element->getAttributeNode($localName);
+            if ($target->hasAttribute($localName)) {
+                $attr = $target->getAttributeNode($localName);
             }
         } else {
             if ($prefix === '*') {
-                foreach ($element->attributes as $candidate) {
+                foreach ($target->attributes as $candidate) {
                     \assert($candidate instanceof \DOMAttr);
                     if ($candidate->localName === $localName) {
                         $attr = $candidate;
@@ -176,7 +62,7 @@ class DomNodeMatchContext extends AbstractMatchContext
                     throw new \RuntimeException(\sprintf('Namespace prefix not found: "%s".', $prefix));
                 }
                 $namespaceUri = $this->nsLookup[$prefix];
-                foreach ($element->attributes as $candidate) {
+                foreach ($target->attributes as $candidate) {
                     \assert($candidate instanceof \DOMAttr);
                     if ($candidate->namespaceURI === $namespaceUri && $candidate->localName === $localName) {
                         $attr = $candidate;
@@ -193,12 +79,323 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
-    public function matchElementType(object $element, WqName $wqName): bool
+    public function getNodeType(object $target): NodeType
     {
-        \assert($element instanceof \DOMElement);
+        return match ($target->nodeType) {
+            \XML_ELEMENT_NODE => NodeType::Element,
+            \XML_TEXT_NODE => NodeType::Text,
+            \XML_COMMENT_NODE => NodeType::Comment,
+            \XML_DOCUMENT_NODE, \XML_HTML_DOCUMENT_NODE => NodeType::Document,
+            \XML_DOCUMENT_TYPE_NODE => NodeType::DocumentType,
+            \XML_DOCUMENT_FRAG_NODE => NodeType::DocumentFragment,
+            default => NodeType::Unsupported,
+        };
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRadioButtonGroup(object $target): array
+    {
+        \assert($target instanceof \DOMElement);
+        $name = $target->getAttribute('name');
+        if ($name === '') {
+            return [$target];
+        }
+
+        $topmost = null;
+        $owner = null;
+        foreach ($this->loopAncestors($target, false) as $pNode) {
+            if ($owner === null && $this->isHtmlElement($pNode, 'form')) {
+                $owner = $pNode;
+            }
+            $topmost = $pNode;
+        }
+
+        if ($owner === null) {
+            if ($topmost === null) {
+                return [$target];
+            }
+            $owner = $topmost;
+        }
+
+        $group = [];
+        foreach ($this->loopDescendants($owner, false) as $node) {
+            if (!$this->isHtmlElement($node, 'input')) {
+                continue;
+            }
+
+            \assert($node instanceof \DOMElement);
+            if ($node->getAttribute('name') !== $name || $node->getAttribute('type') !== 'radio') {
+                continue;
+            }
+
+            $group[] = $node;
+        }
+
+        return $group;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isActuallyDisabled(object $target): bool
+    {
+        if (!$this->isHtmlElement($target)) {
+            return false;
+        }
+        \assert($target instanceof \DOMElement);
+        if (\in_array($target->localName, ['button', 'input', 'select', 'textarea', 'fieldset'], true)) {
+            if ($target->hasAttribute('disabled')) {
+                return true;
+            }
+
+            $fieldset = $this->firstAncestorHtmlElement($target, false, function (\DOMElement $node) use ($target) {
+                if ($node->localName !== 'fieldset') {
+                    return false;
+                }
+                if (!$node->hasAttribute('disabled')) {
+                    return false;
+                }
+
+                foreach ($this->loopChildren($node) as $child) {
+                    if ($this->isHtmlElement($child, 'legend')) {
+                        return $this->firstDescendantHtmlElement(
+                            $child,
+                            false,
+                            static fn ($e) => $e === $target
+                        ) === null;
+                    }
+                }
+
+                return true;
+            });
+            if ($fieldset !== null) {
+                return true;
+            }
+        }
+
+        if ($target->localName === 'optgroup' && $target->hasAttribute('disabled')) {
+            return true;
+        }
+
+        if ($target->localName === 'option') {
+            if ($target->hasAttribute('disabled')) {
+                return true;
+            }
+
+            $parent = $target->parentNode;
+            if ($parent !== null && $this->isHtmlElement($parent, 'optgroup')) {
+                \assert($parent instanceof \DOMElement);
+                if ($parent->hasAttribute('disabled')) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isHtmlElement(object $target, string ...$localNames): bool
+    {
+        if ($target instanceof \DOMElement) {
+            if ($target->namespaceURI === null || $target->namespaceURI === self::NS_HTML) {
+                return \count($localNames) === 0 || \in_array($target->localName, $localNames, true);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isReadWritable(object $target): bool
+    {
+        $readWrite = false;
+        if ($this->isHtmlElement($target, 'input')) {
+            \assert($target instanceof \DOMElement);
+            $type = $target->getAttribute('type');
+            if (!\in_array($type, ['checkbox', 'color', 'file', 'hidden', 'radio', 'range'], true)) {
+                if ($this->getAttributeValue($target, 'readonly') === null) {
+                    $readWrite = !$this->isActuallyDisabled($target);
+                }
+            }
+        } elseif ($this->isHtmlElement($target, 'textarea')) {
+            if ($this->getAttributeValue($target, 'readonly') === null) {
+                $readWrite = !$this->isActuallyDisabled($target);
+            }
+        } elseif ($this->isHtmlElement($target)) {
+            \assert($target instanceof \DOMElement);
+            $isContentEditable = function (\DOMElement $ele) {
+                $value = $this->getAttributeValue($ele, 'contenteditable');
+
+                return $value !== null && $value !== 'false';
+            };
+            $readWrite = $this->firstAncestorHtmlElement($target, true, $isContentEditable) !== null;
+        }
+
+        return $readWrite;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return \Generator<int,\DOMElement|\DOMDocument|\DOMDocumentFragment>
+     */
+    public function loopAncestors(object $target, bool $includeSelf): Generator
+    {
+        if ($includeSelf) {
+            if (
+                $target instanceof \DOMElement || $target instanceof \DOMDocument ||
+                $target instanceof \DOMDocumentFragment
+            ) {
+                yield $target;
+            }
+        }
+        $parent = $target->parentNode;
+        while ($parent !== null) {
+            \assert($parent instanceof \DOMElement || $parent instanceof \DOMDocument ||
+            $parent instanceof \DOMDocumentFragment);
+
+            yield $parent;
+
+            $parent = $parent->parentNode;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return \Generator<int,\DOMElement>
+     */
+    public function loopChildren(object $target): \Generator
+    {
+        foreach ($target->childNodes as $child) {
+            if (!($child instanceof \DOMElement)) {
+                continue;
+            }
+
+            yield $child;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return \Generator<int,\DOMNode>
+     */
+    public function loopDescendants(object $target, bool $includeSelf): \Generator
+    {
+        if ($includeSelf) {
+            yield $target;
+        }
+
+        /**
+         * @var array<int,\DOMNode> $nodes
+         */
+        $nodes = \iterator_to_array($target->childNodes);
+        while (\count($nodes) > 0) {
+            $node = \array_shift($nodes);
+
+            yield $node;
+
+            /**
+             * @var array<int,\DOMNode> $subNodes
+             */
+            $subNodes = \iterator_to_array($node->childNodes);
+            \array_splice($nodes, 0, 0, $subNodes);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return \Generator<int,\DOMElement|\DOMDocumentFragment>
+     */
+    public function loopLeftCandidates(object $target, Combinator $combinator): \Generator
+    {
+        \assert($target instanceof \DOMElement);
+        if ($combinator === Combinator::Descendant) {
+            foreach ($this->loopAncestors($target, false) as $node) {
+                if (!($node instanceof \DOMElement) && !($node instanceof \DOMDocumentFragment)) {
+                    continue;
+                }
+
+                yield $node;
+            }
+        } elseif ($combinator === Combinator::Child) {
+            $parent = $target->parentNode;
+            if ($parent instanceof \DOMElement || $parent instanceof \DOMDocumentFragment) {
+                yield $parent;
+            }
+        } elseif ($combinator === Combinator::NextSibling) {
+            $prev = $target->previousElementSibling;
+            if ($prev !== null) {
+                yield $prev;
+            }
+        } elseif ($combinator === Combinator::SubsequentSibling) {
+            $prev = $target->previousElementSibling;
+            while ($prev !== null) {
+                yield $prev;
+
+                $prev = $prev->previousElementSibling;
+            }
+        } else {
+            throw new \RuntimeException(\sprintf('Unsupported combinator "%s".', $combinator->value));
+        }
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return \Generator<int,\DOMElement>
+     */
+    public function loopRightCandidates(object $target, Combinator $combinator): \Generator
+    {
+        if ($combinator === Combinator::Descendant) {
+            foreach ($this->loopDescendants($target, false) as $child) {
+                if (!($child instanceof \DOMElement)) {
+                    continue;
+                }
+
+                yield $child;
+            }
+        } elseif ($combinator === Combinator::Child) {
+            yield from $this->loopChildren($target);
+        } elseif ($combinator === Combinator::NextSibling) {
+            if ($target instanceof \DOMElement && $target->nextElementSibling !== null) {
+                yield $target->nextElementSibling;
+            }
+        } elseif ($combinator === Combinator::SubsequentSibling) {
+            if ($target instanceof \DOMElement) {
+                $current = $target->nextElementSibling;
+                while ($current !== null) {
+                    yield $current;
+
+                    $current = $current->nextElementSibling;
+                }
+            }
+        } else {
+            throw new \RuntimeException(\sprintf('Unsupported combinator "%s".', $combinator->value));
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function matchElementType(object $target, WqName $wqName): bool
+    {
+        if (!($target instanceof \DOMElement)) {
+            return false;
+        }
+
         $namespaceUri = null;
         $localName = $wqName->localName;
-        $isLocalNameMatched = $localName === '*' || $element->localName === $localName;
+        $isLocalNameMatched = $localName === '*' || $target->localName === $localName;
         if ($wqName->prefixSpecified) {
             if ($wqName->prefix !== null) {
                 if ($wqName->prefix === '*') {
@@ -217,20 +414,74 @@ class DomNodeMatchContext extends AbstractMatchContext
             $namespaceUri = $this->nsLookup[''];
         }
 
-        return $element->namespaceURI === $namespaceUri && $isLocalNameMatched;
+        return $target->namespaceURI === $namespaceUri && $isLocalNameMatched;
     }
 
     /**
      * @inheritDoc
      */
-    public function matchDefaultNamespace(object $element): bool
+    public function matchDefaultNamespace(object $target): bool
     {
-        \assert($element instanceof \DOMElement);
         if (\array_key_exists('', $this->nsLookup)) {
-            return $this->nsLookup[''] === $element->namespaceURI;
+            return $this->nsLookup[''] === $target->namespaceURI;
         }
 
         return true;
     }
+
     #endregion extends AbstractMatchContext
+
+    /**
+     * Gets the first ancestor HTML element that matches the specified predicate.
+     *
+     * @param \DOMNode $target      The node to start from.
+     * @param bool     $includeSelf Whether to include the target node itself.
+     * @param callable $predicate   The predicate to match.
+     *
+     * @return \DOMElement|null The first ancestor HTML element that matches the predicate, or `null` if not found.
+     *
+     * @phpstan-param callable(\DOMElement):bool $predicate
+     */
+    private function firstAncestorHtmlElement(\DOMNode $target, bool $includeSelf, callable $predicate): ?\DOMElement
+    {
+        foreach ($this->loopAncestors($target, $includeSelf) as $node) {
+            if (!$this->isHtmlElement($node)) {
+                continue;
+            }
+
+            \assert($node instanceof \DOMElement);
+            if ($predicate($node)) {
+                return $node;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the first descendant HTML element that matches the specified predicate.
+     *
+     * @param \DOMNode $target      The element to start from.
+     * @param bool     $includeSelf Whether to include the target node itself.
+     * @param callable $predicate   The predicate to match.
+     *
+     * @return \DOMElement|null The first descendant HTML element that matches the predicate, or `null` if not found.
+     *
+     * @phpstan-param callable(\DOMElement):bool $predicate
+     */
+    private function firstDescendantHtmlElement(\DOMNode $target, bool $includeSelf, callable $predicate): ?\DOMElement
+    {
+        foreach ($this->loopDescendants($target, $includeSelf) as $node) {
+            if (!$this->isHtmlElement($node)) {
+                continue;
+            }
+
+            \assert($node instanceof \DOMElement);
+            if ($predicate($node)) {
+                return $node;
+            }
+        }
+
+        return null;
+    }
 }

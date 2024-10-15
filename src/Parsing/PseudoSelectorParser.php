@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace Manychois\Cici\Parsing;
 
 use Manychois\Cici\Selectors\AbstractPseudoSelector;
+use Manychois\Cici\Selectors\PseudoClasses\AnyLinkPseudoClass;
+use Manychois\Cici\Selectors\PseudoClasses\EmptyPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\HasPseudoClass;
+use Manychois\Cici\Selectors\PseudoClasses\InputPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\IsWherePseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\NotPseudoClass;
+use Manychois\Cici\Selectors\PseudoClasses\RootPseudoClass;
+use Manychois\Cici\Selectors\PseudoClasses\ScopePseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\UnknownPseudoClassSelector;
 use Manychois\Cici\Tokenization\Tokens\AbstractToken;
 use Manychois\Cici\Tokenization\Tokens\FunctionToken;
@@ -50,7 +55,21 @@ class PseudoSelectorParser
         if ($token instanceof IdentToken) {
             $name = \strtolower($token->value);
 
-            return new UnknownPseudoClassSelector($name, false);
+            return match ($name) {
+                'any-link' => new AnyLinkPseudoClass(),
+                'checked',
+                'disabled',
+                'enabled',
+                'indeterminate',
+                'optional',
+                'read-only',
+                'read-write',
+                'required' => new InputPseudoClass($name),
+                'empty' => new EmptyPseudoClass(),
+                'root' => new RootPseudoClass(),
+                'scope' => new ScopePseudoClass(),
+                default => new UnknownPseudoClassSelector($name, false),
+            };
         }
 
         if ($token instanceof FunctionToken) {

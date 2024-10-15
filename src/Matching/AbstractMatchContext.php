@@ -42,70 +42,125 @@ abstract class AbstractMatchContext
     /**
      * Gets the attribute value of an element.
      *
-     * @param TNode         $element The element.
-     * @param string|WqName $wqName  The qualified name of the attribute.
+     * @param TNode         $target The element.
+     * @param string|WqName $wqName The qualified name of the attribute.
      *
      * @return string|null The attribute value, or `null` if the attribute does not exist.
      */
-    abstract public function getAttributeValue(object $element, string|WqName $wqName): ?string;
+    abstract public function getAttributeValue(object $target, string|WqName $wqName): ?string;
 
     /**
-     * Loops through all the children of an element.
+     * Gets type of the node.
      *
-     * @param TNode $parentNode The parent node.
+     * @param TNode $target The node.
      *
-     * @return \Generator<int,TNode> All the children.
+     * @return NodeType The type of the node.
      */
-    abstract public function loopChildren(object $parentNode): \Generator;
+    abstract public function getNodeType(object $target): NodeType;
 
     /**
-     * Loops through all the descendant elements of an element.
+     * Gets a group of radio buttons that have the same name attribute and are descendants of the same form.
      *
-     * @param TNode $parentNode  The parent node.
-     * @param bool  $includeSelf `true` to include the parent node itself if it is an element;
-     *                           otherwise, `false`.
+     * @param TNode $target One of the radio buttons in the group.
      *
-     * @return \Generator<int,TNode> All the descendant elements.
+     * @return array<int,TNode> The radio buttons in the group, including the target.
      */
-    abstract public function loopDescendants(object $parentNode, bool $includeSelf): \Generator;
+    abstract public function getRadioButtonGroup(object $target): array;
 
     /**
-     * Loops through all the possible elements that can be on the left side of a combinator.
+     * Checks whether a node is actually a disabled element.
      *
-     * @param TNode      $element    The element on the right side of the combinator.
+     * @param TNode $target The node to check.
+     *
+     * @return bool `true` if the node is actually a disabled element; otherwise, `false`.
+     */
+    abstract public function isActuallyDisabled(object $target): bool;
+
+    /**
+     * Checks if a node is an HTML element with one of the specified local names.
+     *
+     * @param TNode  $target        The node to check.
+     * @param string ...$localNames The local names to match. If empty, only the namespace URI is checked.
+     *
+     * @return bool `true` if the node is an HTML element with one of the specified local names; otherwise, `false`.
+     */
+    abstract public function isHtmlElement(object $target, string ...$localNames): bool;
+
+    /**
+     * Checks if an node is a read-writable element.
+     *
+     * @param TNode $target The node to check.
+     *
+     * @return bool `true` if the node is a read-writable element; otherwise, `false`.
+     */
+    abstract public function isReadWritable(object $target): bool;
+
+    /**
+     * Loops through all the ancestors of a node.
+     *
+     * @param TNode $target      The node to start from.
+     * @param bool  $includeSelf Whether to include the target node itself.
+     *
+     * @return \Generator<int,TNode> All the ancestors.
+     */
+    abstract public function loopAncestors(object $target, bool $includeSelf): \Generator;
+
+    /**
+     * Loops through all the children elements of a node.
+     *
+     * @param TNode $target The node to start from.
+     *
+     * @return \Generator<int,TNode> All the children elements.
+     */
+    abstract public function loopChildren(object $target): \Generator;
+
+    /**
+     * Loops through all the descendant nodes of a node.
+     *
+     * @param TNode $target      The node to start from.
+     * @param bool  $includeSelf Whether to include the target node itself.
+     *
+     * @return \Generator<int,TNode> All the descendant nodes.
+     */
+    abstract public function loopDescendants(object $target, bool $includeSelf): \Generator;
+
+    /**
+     * Loops through all the possible nodes that can be on the left side of a combinator.
+     *
+     * @param TNode      $target     The node on the right side of the combinator.
      * @param Combinator $combinator The combinator.
      *
-     * @return \Generator<int,TNode> All the possible elements that can be on the left side of a combinator.
+     * @return \Generator<int,TNode> All the possible nodes that can be on the left side of a combinator.
      */
-    abstract public function loopLeftCandidates(object $element, Combinator $combinator): \Generator;
+    abstract public function loopLeftCandidates(object $target, Combinator $combinator): \Generator;
 
     /**
      * Loops through all the possible elements that can be on the right side of a combinator.
      *
-     * @param TNode      $node       The node on the left side of the combinator.
+     * @param TNode      $target     The node on the left side of the combinator.
      * @param Combinator $combinator The combinator.
      *
      * @return \Generator<int,TNode> All the possible elements that can be on the right side of a combinator.
      */
-    abstract public function loopRightCandidates(object $node, Combinator $combinator): \Generator;
+    abstract public function loopRightCandidates(object $target, Combinator $combinator): \Generator;
 
     /**
-     * Matches the type of an element.
+     * Matches the element type of a node.
      *
-     * @param TNode  $element The element.
-     * @param WqName $wqName  The qualified name of the type.
+     * @param TNode  $target The node to match.
+     * @param WqName $wqName The qualified name of the type.
      *
-     * @return bool `true` if the element matches the type; otherwise, `false`.
+     * @return bool `true` if the node matches the element type; otherwise, `false`.
      */
-    abstract public function matchElementType(object $element, WqName $wqName): bool;
+    abstract public function matchElementType(object $target, WqName $wqName): bool;
 
     /**
-     * Checks if an element matches the default namespace declared in the scope.
-     * If the default namespace is not declared, the element is considered to match.
+     * Checks if a node matches the default namespace declared in the scope.
+     * If the default namespace is not declared, the node is considered to match.
      *
-     * @param TNode $element The element.
+     * @param TNode $target The node to match.
      *
-     * @return bool `true` if the element matches the default namespace; otherwise, `false`.
+     * @return bool `true` if the node matches the default namespace; otherwise, `false`.
      */
-    abstract public function matchDefaultNamespace(object $element): bool;
+    abstract public function matchDefaultNamespace(object $target): bool;
 }

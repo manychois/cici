@@ -185,19 +185,27 @@ class DomNodeMatchContextTest extends TestCase
         $context = new DomNodeMatchContext($doc, $doc, []);
         $firstDiv = null;
         $tagNames = [];
-        foreach ($context->loopDescendants($doc, false) as $ele) {
-            if ($firstDiv === null && $ele->localName === 'div') {
-                $firstDiv = $ele;
+        foreach ($context->loopDescendants($doc, false) as $node) {
+            if (!($node instanceof \DOMElement)) {
+                continue;
             }
-            $tagNames[] = $ele->nodeName;
+
+            if ($firstDiv === null && $node->localName === 'div') {
+                $firstDiv = $node;
+            }
+            $tagNames[] = $node->localName;
         }
 
         static::assertSame('html,head,title,meta,body,div,p,p,b,i,div,p', \implode(',', $tagNames));
         static::assertNotNull($firstDiv);
 
         $tagNames = [];
-        foreach ($context->loopDescendants($firstDiv, true) as $ele) {
-            $tagNames[] = $ele->nodeName;
+        foreach ($context->loopDescendants($firstDiv, true) as $node) {
+            if (!($node instanceof \DOMElement)) {
+                continue;
+            }
+
+            $tagNames[] = $node->localName;
         }
         static::assertSame('div,p,p,b,i', \implode(',', $tagNames));
     }
