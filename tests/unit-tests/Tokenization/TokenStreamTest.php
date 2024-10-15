@@ -23,7 +23,7 @@ class TokenStreamTest extends TestCase
         $this->assertSame(0, $error->position);
 
         $errors = new ParseExceptionCollection();
-        $token = new WhitespaceToken(20);
+        $token = new WhitespaceToken(20, 1);
         $tokenStream = new TokenStream([$token], $errors);
         $tokenStream->recordParseException('Unknown whitespace.');
         $this->assertCount(1, $errors);
@@ -35,9 +35,9 @@ class TokenStreamTest extends TestCase
     public function testSkipWhitepace(): void
     {
         $errors = new ParseExceptionCollection();
-        $ws1 = new WhitespaceToken(0);
-        $ws2 = new WhitespaceToken(1);
-        $id = new IdentToken('div', 2);
+        $ws1 = new WhitespaceToken(0, 1);
+        $ws2 = new WhitespaceToken(1, 1);
+        $id = new IdentToken('div', 2, 3);
         $tokenStream = new TokenStream([$ws1, $ws2, $id], $errors);
         $hasWs = $tokenStream->skipWhitespace();
         $this->assertTrue($hasWs);

@@ -98,16 +98,58 @@ class PseudoSelectorParserTest extends TestCase
             ),
             10,
         ];
+
+        $pseudoClasses = [
+            'any-link',
+            'checked',
+            'disabled',
+            'empty',
+            'enabled',
+            'first-child',
+            'first-of-type',
+            'indeterminate',
+            'last-child',
+            'last-of-type',
+            'optional',
+            'read-only',
+            'read-write',
+            'required',
+            'root',
+            'scope',
+            'only-child',
+            'only-of-type',
+        ];
+        foreach ($pseudoClasses as $name) {
+            yield $name => [':' . $name, \sprintf('{"name":"%s","type":"pseudo-class"}', $name), 2];
+        }
+
+        yield [
+            ':nth-child(2n+1 of .active)',
+            '{"formula":{"a":2,"b":1},"name":"nth-child","of":' .
+                $compound('{"className":"active","type":"class"}') . ',"type":"pseudo-class"}',
+            10,
+        ];
+
+        yield [
+            ':nth-last-of-type(odd)',
+            '{"formula":{"a":2,"b":1,"keyword":"odd"},"name":"nth-last-of-type","type":"pseudo-class"}',
+            4,
+        ];
     }
 
     public static function provideTryParsePseudoClassSelector_invalid(): \Generator
     {
-        yield [':first-child(2n+1', 'The function is not closed.', 4];
-        yield [':unknown("' . "\n" . '")', 'The function is not closed.', 2];
-        yield [':has(:has(a))', 'The :has() pseudo-class cannot be nested.', 3];
-        yield [':has(!a)', 'Invalid argument for the :has() pseudo-class.', 3];
-        yield [':has(a!)', 'Unexpected token inside pseudo-class "has".', 4];
-        yield [':not({})', 'Invalid argument for the :not() pseudo-class.', 4];
+        yield [':first-child(2n+1', 'The function is not closed.', 17];
+        yield [':unknown("' . "\n" . '")', 'The function is not closed.', 9];
+        yield [':has(:has(a))', 'The :has() pseudo-class cannot be nested.', 6];
+        yield [':has(!a)', 'Invalid argument for the :has() pseudo-class.', 5];
+        yield [':has(a!)', 'Unexpected token inside :has() pseudo-class.', 6];
+        yield [':not({})', 'Invalid argument for the :not() pseudo-class.', 5];
+        yield [':nth-child()', 'Missing argument for the :nth-child() pseudo-class.', 12];
+        yield [':nth-child(?)', 'Invalid argument for the :nth-child() pseudo-class.', 11];
+        yield [':nth-child(2n+1 of)', 'Invalid argument for the :nth-child() pseudo-class.', 18];
+        yield [':nth-child(2n+1 of ?)', 'Invalid argument for the :nth-child() pseudo-class.', 19];
+        yield [':nth-of-type(?)', 'Invalid argument for the :nth-of-type() pseudo-class.', 13];
     }
 
     #[DataProvider('provideTryParsePseudoClassSelector')]
@@ -129,8 +171,13 @@ class PseudoSelectorParserTest extends TestCase
         $tokenStream = $this->convertToTokenStream($input);
         // Consume the first colon
         $tokenStream->tryConsume();
-        $this->parser->tryParsePseudoClassSelector($tokenStream);
-        $this->assertSame($indexAfter, $tokenStream->position);
+        try {
+            $this->parser->tryParsePseudoClassSelector($tokenStream);
+        } catch (ParseException $e) {
+            $this->assertSame($indexAfter, $e->position);
+
+            throw $e;
+        }
     }
 
 

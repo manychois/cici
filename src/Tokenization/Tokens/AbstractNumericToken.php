@@ -29,10 +29,11 @@ abstract class AbstractNumericToken extends AbstractToken
      * @param bool      $isInt   Whether the value is an integer.
      * @param bool      $hasSign Whether the value has a sign.
      * @param int       $offset  The offset of the token.
+     * @param int       $length  The byte length of the token.
      */
-    public function __construct(int|float $value, bool $isInt, bool $hasSign, int $offset)
+    public function __construct(int|float $value, bool $isInt, bool $hasSign, int $offset, int $length)
     {
-        parent::__construct($offset);
+        parent::__construct($offset, $length);
 
         $this->value = $value;
         $this->isInt = $isInt;

@@ -84,6 +84,12 @@ class PseudoSelectorParser
             $closeToken = $tokenStream->tryConsume();
 
             if ($closeToken instanceof SymbolToken && $closeToken->value === Symbol::RightParenthesis) {
+                if (\count($anyValue) === 0) {
+                    throw $tokenStream->recordParseException(
+                        \sprintf('Missing argument for the :%s() pseudo-class.', $name)
+                    );
+                }
+
                 $argsTokenStream = new TokenStream($anyValue, $tokenStream->errors);
                 $argsTokenStream->skipWhitespace();
                 $pseudoClass = match ($name) {
@@ -98,7 +104,7 @@ class PseudoSelectorParser
                 $argsTokenStream->skipWhitespace();
                 if ($argsTokenStream->hasMore()) {
                     throw $argsTokenStream->recordParseException(
-                        \sprintf('Unexpected token inside pseudo-class "%s".', $name)
+                        \sprintf('Unexpected token inside :%s() pseudo-class.', $name)
                     );
                 }
 
@@ -127,16 +133,27 @@ class PseudoSelectorParser
      */
     private function parseChildIndexedPseudoClass(string $name, TokenStream $tokenStream): ChildIndexedPseudoClass
     {
+        $invalidErrMsg = \sprintf('Invalid argument for the :%s() pseudo-class.', $name);
         $anb = $this->anbParser->tryParse($tokenStream);
         if ($anb === null) {
-            throw $tokenStream->recordParseException(\sprintf('Invalid argument for the :%s() pseudo-class.', $name));
+            throw $tokenStream->recordParseException($invalidErrMsg);
         }
 
         $of = null;
         $hasWs = $tokenStream->skipWhitespace();
         if ($hasWs) {
-            $inner = fn () => $this->main->tryParseComplexSelector($tokenStream, true, false);
-            $of = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);
+            $keywordOf = $tokenStream->tryConsume();
+            if ($keywordOf instanceof IdentToken && \strtolower($keywordOf->value) === 'of') {
+                $hasWs = $tokenStream->skipWhitespace();
+                if (!$hasWs) {
+                    throw $tokenStream->recordParseException($invalidErrMsg);
+                }
+                $inner = fn () => $this->main->tryParseComplexSelector($tokenStream, true, false);
+                $of = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);
+                if ($of === null) {
+                    throw $tokenStream->recordParseException($invalidErrMsg);
+                }
+            }
         }
 
         return new ChildIndexedPseudoClass($name, $anb, $of);
@@ -154,7 +171,7 @@ class PseudoSelectorParser
         $findHas = static fn (AbstractToken $t) => $t instanceof FunctionToken && \strtolower($t->value) === 'has';
         $nestedHas = $tokenStream->first($findHas);
         if ($nestedHas !== null) {
-            throw $tokenStream->recordParseException('The :has() pseudo-class cannot be nested.', $nestedHas->position);
+            throw $tokenStream->recordParseException('The :has() pseudo-class cannot be nested.', $nestedHas->offset);
         }
         $inner = fn () => $this->main->tryParseRelativeSelector($tokenStream, false);
         $selector = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);

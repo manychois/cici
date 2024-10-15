@@ -40,22 +40,22 @@ class TokenTest extends TestCase
 
     public static function provideToString(): \Generator
     {
-        yield [new AtKeywordToken('foo', 0), '@foo'];
-        yield [new BadStringToken(0), '"bad-string"'];
-        yield [new BadUrlToken(0), 'url(bad-url)'];
-        yield [new DelimToken('>', 0), '>'];
-        yield [new DimensionToken(1.23, 'px', false, false, 0), '1.23px'];
-        yield [new FunctionToken('last-child', 0), 'last-child('];
-        yield [new HashToken('123', false, 0), '#123'];
-        yield [new IdentToken('foo', 0), 'foo'];
-        yield [new NumberToken(-2, true, true, 0), '-2'];
-        yield [new PercentageToken(50, true, true, 0), '50%'];
-        yield [new StringToken("'line1\nline2\"", 0), '"\'line1\\A line2\\22 "'];
-        yield [new SymbolToken(Symbol::Colon, 0), ':'];
-        yield [new UnicodeRangeToken(0, 64, 0), 'U+0-40'];
-        yield [new UnicodeRangeToken(123, 123, 0), 'U+7B'];
-        yield [new UrlToken("'line1\n(line2)\"", 0), 'url(\\27 line1\\A \\28 line2\\29 \\22 )'];
-        yield [new WhitespaceToken(0), ' '];
+        yield [new AtKeywordToken('foo', 0, 4), '@foo'];
+        yield [new BadStringToken(0, 12), '"bad-string"'];
+        yield [new BadUrlToken(0, 12), 'url(bad-url)'];
+        yield [new DelimToken('>', 0, 1), '>'];
+        yield [new DimensionToken(1.23, 'px', false, false, 0, 6), '1.23px'];
+        yield [new FunctionToken('last-child', 0, 11), 'last-child('];
+        yield [new HashToken('123', false, 0, 4), '#123'];
+        yield [new IdentToken('foo', 0, 3), 'foo'];
+        yield [new NumberToken(-2, true, true, 0, 2), '-2'];
+        yield [new PercentageToken(50, true, true, 0, 3), '50%'];
+        yield [new StringToken("'line1\nline2\"", 0, 20), '"\'line1\\A line2\\22 "'];
+        yield [new SymbolToken(Symbol::Colon, 0, 1), ':'];
+        yield [new UnicodeRangeToken(0, 64, 0, 6), 'U+0-40'];
+        yield [new UnicodeRangeToken(123, 123, 0, 4), 'U+7B'];
+        yield [new UrlToken("'line1\n(line2)\"", 0, 34), 'url(\\27 line1\\A \\28 line2\\29 \\22 )'];
+        yield [new WhitespaceToken(0, 1), ' '];
     }
 
     public function testEscape(): void

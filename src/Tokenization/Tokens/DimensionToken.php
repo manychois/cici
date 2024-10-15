@@ -18,11 +18,12 @@ class DimensionToken extends AbstractNumericToken
      * @param string    $unit    The unit of the dimension.
      * @param bool      $isInt   Whether the value is an integer.
      * @param bool      $hasSign Whether the value has a sign.
-     * @param int       $offset  The offset of the token.
+     * @param int       $offset  The string position at which the token starts.
+     * @param int       $length  The byte length of the token.
      */
-    public function __construct(int|float $value, string $unit, bool $isInt, bool $hasSign, int $offset)
+    public function __construct(int|float $value, string $unit, bool $isInt, bool $hasSign, int $offset, int $length)
     {
-        parent::__construct($value, $isInt, $hasSign, $offset);
+        parent::__construct($value, $isInt, $hasSign, $offset, $length);
 
         $this->unit = $unit;
     }

@@ -15,11 +15,12 @@ class SymbolToken extends AbstractToken
      * Initializes a new instance of SymbolToken.
      *
      * @param Symbol $symbol The symbol.
-     * @param int    $offset The offset of the token.
+     * @param int    $offset The string position at which the token starts.
+     * @param int    $length The byte length of the token.
      */
-    public function __construct(Symbol $symbol, int $offset)
+    public function __construct(Symbol $symbol, int $offset, int $length)
     {
-        parent::__construct($offset);
+        parent::__construct($offset, $length);
 
         $this->value = $symbol;
     }

@@ -14,11 +14,12 @@ class HashToken extends AbstractLiteralToken
      *
      * @param string $value    The identifier value after the hash sign.
      * @param bool   $isIdType Whether the hash token is an ID type.
-     * @param int    $offset   The offset of the token.
+     * @param int    $offset   The string position at which the token starts.
+     * @param int    $length   The byte length of the token.
      */
-    public function __construct(string $value, public readonly bool $isIdType, int $offset)
+    public function __construct(string $value, public readonly bool $isIdType, int $offset, int $length)
     {
-        parent::__construct($value, $offset);
+        parent::__construct($value, $offset, $length);
     }
 
     #region extends AbstractLiteralToken

@@ -9,16 +9,23 @@ namespace Manychois\Cici\Tokenization\Tokens;
  */
 class UnicodeRangeToken extends AbstractToken
 {
+    public readonly int $start;
+    public readonly int $end;
+
     /**
      * Creates a new instance of the UnicodeRangeToken class.
      *
      * @param int $start  The start of the range.
      * @param int $end    The end of the range.
-     * @param int $offset The offset of the token.
+     * @param int $offset The string position at which the token starts.
+     * @param int $length The byte length of the token.
      */
-    public function __construct(public readonly int $start, public readonly int $end, int $offset)
+    public function __construct(int $start, int $end, int $offset, int $length)
     {
-        parent::__construct($offset);
+        parent::__construct($offset, $length);
+
+        $this->start = $start;
+        $this->end = $end;
     }
 
     #region extends AbstractToken

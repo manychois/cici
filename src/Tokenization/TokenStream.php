@@ -66,10 +66,15 @@ class TokenStream
     {
         if ($position < 0) {
             if ($this->position < $this->length) {
-                $position = $this->tokens[$this->position]->position;
+                $position = $this->tokens[$this->position]->offset;
             } else {
                 $count = \count($this->tokens);
-                $position = $count > 0 ? $this->tokens[$count - 1]->position : 0;
+                if ($count > 0) {
+                    $token = $this->tokens[$count - 1];
+                    $position = $token->offset + $token->length;
+                } else {
+                    $position = 0;
+                }
             }
         }
         $ex = new ParseException($message, $position);

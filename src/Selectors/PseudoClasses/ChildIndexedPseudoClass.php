@@ -87,11 +87,14 @@ class ChildIndexedPseudoClass extends AbstractPseudoSelector
         if (!$this->isFunctional) {
             return $json;
         }
+
         \assert($this->anb !== null);
         $json['formula'] = $this->anb;
-        if ($this->of === null) {
+        if ($this->of !== null) {
             $json['of'] = $this->of;
         }
+        unset($json['args']);
+        \ksort($json);
 
         return $json;
     }

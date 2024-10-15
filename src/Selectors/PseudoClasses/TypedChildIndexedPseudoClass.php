@@ -87,6 +87,8 @@ class TypedChildIndexedPseudoClass extends AbstractPseudoSelector
         }
         \assert($this->anb !== null);
         $json['formula'] = $this->anb;
+        unset($json['args']);
+        \ksort($json);
 
         return $json;
     }

@@ -19,16 +19,19 @@ abstract class AbstractToken implements \JsonSerializable, \Stringable
     /**
      * The string position at which the token starts.
      */
-    public readonly int $position;
+    public readonly int $offset;
+    public readonly int $length;
 
     /**
      * Initializes a new instance of the AbstractToken class.
      *
-     * @param int $position The string position at which the token starts.
+     * @param int $offset The string position at which the token starts.
+     * @param int $length The byte length of the token.
      */
-    public function __construct(int $position)
+    public function __construct(int $offset, int $length)
     {
-        $this->position = $position;
+        $this->offset = $offset;
+        $this->length = $length;
     }
 
     /**

@@ -141,7 +141,7 @@ class Tokenizer
             $textStream->skipWhitespace();
             $ch = $textStream->peek(1);
             if ($ch === '\'' || $ch === '"') {
-                return new FunctionToken('url', $tokenOffset);
+                return new FunctionToken('url', $tokenOffset, 4);
             }
 
             return $this->consumeUrlToken($textStream, $tokenOffset);
@@ -150,10 +150,10 @@ class Tokenizer
         if ($textStream->peek(1) === '(') {
             $textStream->position++;
 
-            return new FunctionToken($ident, $tokenOffset);
+            return new FunctionToken($ident, $tokenOffset, $textStream->position - $tokenOffset);
         }
 
-        return new IdentToken($ident, $tokenOffset);
+        return new IdentToken($ident, $tokenOffset, $textStream->position - $tokenOffset);
     }
 
     /**
@@ -227,7 +227,7 @@ class Tokenizer
                 $textStream->position = $pos;
                 $textStream->recordParseException('Newline found in the string.');
 
-                return new BadStringToken($tokenOffset);
+                return new BadStringToken($tokenOffset, $textStream->position - $tokenOffset);
             }
 
             \assert($ch === '\\');
@@ -246,7 +246,7 @@ class Tokenizer
             }
         }
 
-        return new StringToken($string, $tokenOffset);
+        return new StringToken($string, $tokenOffset, $textStream->position - $tokenOffset);
     }
 
     /**
@@ -273,7 +273,7 @@ class Tokenizer
             $textStream->position = $regexResult->offset + \strlen($ch);
 
             if ($ch === ')') {
-                return new UrlToken($url, $tokenOffset);
+                return new UrlToken($url, $tokenOffset, $textStream->position - $tokenOffset);
             }
 
             if ($ch === ' ' || $ch === "\t" || $ch === "\n") {
@@ -281,12 +281,12 @@ class Tokenizer
                 if ($textStream->peek(1) === ')') {
                     $textStream->position++;
 
-                    return new UrlToken($url, $tokenOffset);
+                    return new UrlToken($url, $tokenOffset, $textStream->position - $tokenOffset);
                 }
 
                 $this->consumeRemnantsOfBadUrl($textStream);
 
-                return new BadUrlToken($tokenOffset);
+                return new BadUrlToken($tokenOffset, $textStream->position - $tokenOffset);
             }
 
             if ($ch === '\\') {
@@ -294,7 +294,7 @@ class Tokenizer
                     $textStream->recordParseException('Unexpected newline in URL.');
                     $this->consumeRemnantsOfBadUrl($textStream);
 
-                    return new BadUrlToken($tokenOffset);
+                    return new BadUrlToken($tokenOffset, $textStream->position - $tokenOffset);
                 }
 
                 $url .= $this->consumeEscapedCodePoint($textStream);
@@ -312,7 +312,7 @@ class Tokenizer
             $textStream->recordParseException(\sprintf('Invalid character %s in URL.', $ch));
             $this->consumeRemnantsOfBadUrl($textStream);
 
-            return new BadUrlToken($tokenOffset);
+            return new BadUrlToken($tokenOffset, $textStream->position - $tokenOffset);
         }
 
         // eof case
@@ -320,7 +320,7 @@ class Tokenizer
         $textStream->position = $textStream->length;
         $textStream->recordParseException();
 
-        return new UrlToken($url, $tokenOffset);
+        return new UrlToken($url, $tokenOffset, $textStream->position - $tokenOffset);
     }
 
     /**
@@ -367,7 +367,7 @@ class Tokenizer
         $hasSign = $value[0] === '+' || $value[0] === '-';
         $value = $isInt ? \intval($value) : \floatval($value);
 
-        return new NumberToken($value, $isInt, $hasSign, $offset);
+        return new NumberToken($value, $isInt, $hasSign, $offset, $textStream->position - $offset);
     }
 
     /**
@@ -387,13 +387,26 @@ class Tokenizer
         if ($regexResult->success) {
             $unit = $this->consumeIdentSequence($textStream);
 
-            return new DimensionToken($number->value, $unit, $number->isInt, $number->hasSign, $number->position);
+            return new DimensionToken(
+                $number->value,
+                $unit,
+                $number->isInt,
+                $number->hasSign,
+                $number->offset,
+                $textStream->position - $number->offset
+            );
         }
 
         if ($textStream->peek(1) === '%') {
             $textStream->position++;
 
-            return new PercentageToken($number->value, $number->isInt, $number->hasSign, $number->position);
+            return new PercentageToken(
+                $number->value,
+                $number->isInt,
+                $number->hasSign,
+                $number->offset,
+                $textStream->position - $number->offset
+            );
         }
 
         return $number;
@@ -419,7 +432,7 @@ class Tokenizer
         $isIdType = $regexResult->success;
         $ident = $this->consumeIdentSequence($textStream);
 
-        return new HashToken($ident, $isIdType, $tokenOffset);
+        return new HashToken($ident, $isIdType, $tokenOffset, $textStream->position - $tokenOffset);
     }
 
     /**
@@ -435,17 +448,17 @@ class Tokenizer
         $ch = $textStream->consume();
 
         $symbol = match ($ch) {
-            ',' => new SymbolToken(Symbol::Comma, $tokenOffset),
-            ':' => new SymbolToken(Symbol::Colon, $tokenOffset),
-            ';' => new SymbolToken(Symbol::Semicolon, $tokenOffset),
-            '(' => new SymbolToken(Symbol::LeftParenthesis, $tokenOffset),
-            ')' => new SymbolToken(Symbol::RightParenthesis, $tokenOffset),
-            '[' => new SymbolToken(Symbol::LeftSquareBracket, $tokenOffset),
-            ']' => new SymbolToken(Symbol::RightSquareBracket, $tokenOffset),
-            '{' => new SymbolToken(Symbol::LeftCurlyBracket, $tokenOffset),
-            '}' => new SymbolToken(Symbol::RightCurlyBracket, $tokenOffset),
-            '-' => $textStream->peek(2) === '->' ? new SymbolToken(Symbol::Cdc, $tokenOffset) : null,
-            '<' => $textStream->peek(3) === '!--' ? new SymbolToken(Symbol::Cdo, $tokenOffset) : null,
+            ',' => new SymbolToken(Symbol::Comma, $tokenOffset, 1),
+            ':' => new SymbolToken(Symbol::Colon, $tokenOffset, 1),
+            ';' => new SymbolToken(Symbol::Semicolon, $tokenOffset, 1),
+            '(' => new SymbolToken(Symbol::LeftParenthesis, $tokenOffset, 1),
+            ')' => new SymbolToken(Symbol::RightParenthesis, $tokenOffset, 1),
+            '[' => new SymbolToken(Symbol::LeftSquareBracket, $tokenOffset, 1),
+            ']' => new SymbolToken(Symbol::RightSquareBracket, $tokenOffset, 1),
+            '{' => new SymbolToken(Symbol::LeftCurlyBracket, $tokenOffset, 1),
+            '}' => new SymbolToken(Symbol::RightCurlyBracket, $tokenOffset, 1),
+            '-' => $textStream->peek(2) === '->' ? new SymbolToken(Symbol::Cdc, $tokenOffset, 3) : null,
+            '<' => $textStream->peek(3) === '!--' ? new SymbolToken(Symbol::Cdo, $tokenOffset, 4) : null,
             default => null,
         };
         if ($symbol !== null) {
@@ -485,7 +498,7 @@ class Tokenizer
             $end = \hexdec(\str_replace('?', 'F', $firstSegment));
             \assert(\is_int($end));
 
-            return new UnicodeRangeToken($start, $end, $tokenOffset);
+            return new UnicodeRangeToken($start, $end, $tokenOffset, $textStream->position - $tokenOffset);
         }
 
         $start = \hexdec($firstSegment);
@@ -493,7 +506,7 @@ class Tokenizer
 
         $regexResult = $textStream->matchRegex('/\G-[\\dA-Fa-f]{1,6}/');
         if (!$regexResult->success) {
-            return new UnicodeRangeToken($start, $start, $tokenOffset);
+            return new UnicodeRangeToken($start, $start, $tokenOffset, $textStream->position - $tokenOffset);
         }
 
         $textStream->position += \strlen($regexResult->value);
@@ -501,7 +514,7 @@ class Tokenizer
         $end = \hexdec($secondSegment);
         \assert(\is_int($end));
 
-        return new UnicodeRangeToken($start, $end, $tokenOffset);
+        return new UnicodeRangeToken($start, $end, $tokenOffset, $textStream->position - $tokenOffset);
     }
 
     /**
@@ -515,9 +528,11 @@ class Tokenizer
     {
         $regexResult = $textStream->matchRegex('/\G[ \\t\\n]+/');
         if ($regexResult->success) {
-            $textStream->position += \strlen($regexResult->value);
+            $offset = $textStream->position;
+            $length = \strlen($regexResult->value);
+            $textStream->position += $length;
 
-            return new WhitespaceToken($textStream->position);
+            return new WhitespaceToken($offset, $length);
         }
 
         return null;
@@ -574,13 +589,13 @@ class Tokenizer
         $textStream->position++;
 
         if ($ch === '+' || $ch === '.' || $ch === '<') {
-            return new DelimToken($ch, $offset);
+            return new DelimToken($ch, $offset, 1);
         }
         if ($ch === '"' || $ch === "'") {
             return $this->consumeStringToken($textStream, $ch);
         }
         if ($ch === '#') {
-            return $this->tryConsumeHashToken($textStream) ?? new DelimToken($ch, $offset);
+            return $this->tryConsumeHashToken($textStream) ?? new DelimToken($ch, $offset, 1);
         }
         if ($ch === '-') {
             $textStream->position = $offset;
@@ -590,7 +605,7 @@ class Tokenizer
             }
             $textStream->position++;
 
-            return new DelimToken($ch, $offset);
+            return new DelimToken($ch, $offset, 1);
         }
 
         if ($ch === '@') {
@@ -598,16 +613,16 @@ class Tokenizer
             if ($regexResult->success) {
                 $ident = $this->consumeIdentSequence($textStream);
 
-                return new AtKeywordToken($ident, $offset);
+                return new AtKeywordToken($ident, $offset, $textStream->position - $offset);
             }
 
-            return new DelimToken($ch, $offset);
+            return new DelimToken($ch, $offset, 1);
         }
         if ($ch === '\\') {
             if ($textStream->peek(1) === "\n") {
                 $textStream->recordParseException('Unexpected newline.');
 
-                return new DelimToken($ch, $offset);
+                return new DelimToken($ch, $offset, 1);
             }
             $textStream->position = $offset;
 
@@ -621,6 +636,6 @@ class Tokenizer
             return $this->consumeIdentLikeToken($textStream);
         }
 
-        return new DelimToken($ch, $offset);
+        return new DelimToken($ch, $offset, 1);
     }
 }
