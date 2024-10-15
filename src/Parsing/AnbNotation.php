@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Manychois\Cici\Matching;
+namespace Manychois\Cici\Parsing;
 
 /**
  * Represents the `an+b` notation.

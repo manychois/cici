@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Manychois\Cici\Selectors\PseudoClasses;
 
 use Manychois\Cici\Matching\AbstractMatchContext;
-use Manychois\Cici\Matching\AnbNotation;
+use Manychois\Cici\Parsing\AnbNotation;
 use Manychois\Cici\Selectors\AbstractPseudoSelector;
 use Manychois\Cici\Selectors\AbstractSelector;
 
