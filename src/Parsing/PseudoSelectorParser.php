@@ -6,6 +6,7 @@ namespace Manychois\Cici\Parsing;
 
 use Manychois\Cici\Selectors\AbstractPseudoSelector;
 use Manychois\Cici\Selectors\PseudoClasses\AnyLinkPseudoClass;
+use Manychois\Cici\Selectors\PseudoClasses\ChildIndexedPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\EmptyPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\HasPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\InputPseudoClass;
@@ -13,6 +14,7 @@ use Manychois\Cici\Selectors\PseudoClasses\IsWherePseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\NotPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\RootPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\ScopePseudoClass;
+use Manychois\Cici\Selectors\PseudoClasses\TypedChildIndexedPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\UnknownPseudoClassSelector;
 use Manychois\Cici\Tokenization\Tokens\AbstractToken;
 use Manychois\Cici\Tokenization\Tokens\FunctionToken;
@@ -27,6 +29,7 @@ use Manychois\Cici\Tokenization\TokenStream;
 class PseudoSelectorParser
 {
     private readonly SelectorParser $main;
+    private readonly AnbParser $anbParser;
 
     /**
      * Creates a new instance of the PseudoSelectorParser class.
@@ -36,6 +39,7 @@ class PseudoSelectorParser
     public function __construct(SelectorParser $main)
     {
         $this->main = $main;
+        $this->anbParser = new AnbParser();
     }
 
     /**
@@ -65,6 +69,8 @@ class PseudoSelectorParser
                 'read-only',
                 'read-write',
                 'required' => new InputPseudoClass($name),
+                'first-child', 'last-child', 'only-child' => new ChildIndexedPseudoClass($name, null),
+                'first-of-type', 'last-of-type', 'only-of-type' => new TypedChildIndexedPseudoClass($name, null),
                 'empty' => new EmptyPseudoClass(),
                 'root' => new RootPseudoClass(),
                 'scope' => new ScopePseudoClass(),
@@ -85,6 +91,9 @@ class PseudoSelectorParser
                     'is', 'where' => $this->parseIsPseudoClass($name, $argsTokenStream),
                     'not' => $this->parseNotPseudoClass($argsTokenStream),
                     default => $this->parseUnknownPseudoClass($argsTokenStream, $name, ...$anyValue),
+                    'nth-child', 'nth-last-child' => $this->parseChildIndexedPseudoClass($name, $argsTokenStream),
+                    'nth-of-type',
+                    'nth-last-of-type' => $this->parseTypedChildIndexedPseudoClass($name, $argsTokenStream),
                 };
                 $argsTokenStream->skipWhitespace();
                 if ($argsTokenStream->hasMore()) {
@@ -106,6 +115,31 @@ class PseudoSelectorParser
         $tokenStream->position = $startIndex;
 
         return null;
+    }
+
+    /**
+     * Parses a child-indexed pseudo-class which contains function arguments.
+     *
+     * @param string      $name        The name of the pseudo-class.
+     * @param TokenStream $tokenStream The token stream of the arguments.
+     *
+     * @return ChildIndexedPseudoClass The parsed pseudo-class.
+     */
+    private function parseChildIndexedPseudoClass(string $name, TokenStream $tokenStream): ChildIndexedPseudoClass
+    {
+        $anb = $this->anbParser->tryParse($tokenStream);
+        if ($anb === null) {
+            throw $tokenStream->recordParseException(\sprintf('Invalid argument for the :%s() pseudo-class.', $name));
+        }
+
+        $of = null;
+        $hasWs = $tokenStream->skipWhitespace();
+        if ($hasWs) {
+            $inner = fn () => $this->main->tryParseComplexSelector($tokenStream, true, false);
+            $of = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);
+        }
+
+        return new ChildIndexedPseudoClass($name, $anb, $of);
     }
 
     /**
@@ -162,6 +196,26 @@ class PseudoSelectorParser
         }
 
         return new NotPseudoClass($selector);
+    }
+
+    /**
+     * Parses a typed child-indexed pseudo-class which contains function arguments.
+     *
+     * @param string      $name        The name of the pseudo-class.
+     * @param TokenStream $tokenStream The token stream of the arguments.
+     *
+     * @return TypedChildIndexedPseudoClass The parsed pseudo-class.
+     */
+    private function parseTypedChildIndexedPseudoClass(
+        string $name,
+        TokenStream $tokenStream
+    ): TypedChildIndexedPseudoClass {
+        $anb = $this->anbParser->tryParse($tokenStream);
+        if ($anb === null) {
+            throw $tokenStream->recordParseException(\sprintf('Invalid argument for the :%s() pseudo-class.', $name));
+        }
+
+        return new TypedChildIndexedPseudoClass($name, $anb);
     }
 
     /**

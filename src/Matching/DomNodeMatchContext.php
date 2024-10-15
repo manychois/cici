@@ -34,6 +34,17 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    public function areOfSameElementType(object $node1, object $node2): bool
+    {
+        return $node1 instanceof \DOMElement &&
+            $node2 instanceof \DOMElement &&
+            $node1->namespaceURI === $node2->namespaceURI &&
+            $node1->localName === $node2->localName;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getAttributeValue(object $target, string|WqName $wqName): ?string
     {
         if (!($target instanceof \DOMElement)) {
@@ -90,6 +101,14 @@ class DomNodeMatchContext extends AbstractMatchContext
             \XML_DOCUMENT_FRAG_NODE => NodeType::DocumentFragment,
             default => NodeType::Unsupported,
         };
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getParentNode(object $target): ?object
+    {
+        return $target->parentNode;
     }
 
     /**

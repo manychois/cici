@@ -40,6 +40,16 @@ abstract class AbstractMatchContext
     }
 
     /**
+     * Checks if two nodes are of the same element type.
+     *
+     * @param TNode $node1 The first node.
+     * @param TNode $node2 The second node.
+     *
+     * @return bool `true` if the nodes are of the same element type; otherwise, `false`.
+     */
+    abstract public function areOfSameElementType(object $node1, object $node2): bool;
+
+    /**
      * Gets the attribute value of an element.
      *
      * @param TNode         $target The element.
@@ -57,6 +67,15 @@ abstract class AbstractMatchContext
      * @return NodeType The type of the node.
      */
     abstract public function getNodeType(object $target): NodeType;
+
+    /**
+     * Gets the parent node of the node.
+     *
+     * @param TNode $target The node.
+     *
+     * @return ?TNode The parent node, or `null` if the node is the root node.
+     */
+    abstract public function getParentNode(object $target): ?object;
 
     /**
      * Gets a group of radio buttons that have the same name attribute and are descendants of the same form.
