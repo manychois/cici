@@ -40,15 +40,23 @@ class PseudoSelectorParserTest extends TestCase
 
         yield [':"bad token"', 'null', 1];
 
-        $compound = static fn (...$s) => \sprintf('{"selectors":[%s],"type":"compound"}', \implode(',', $s));
-        $complex = static fn ($c, ...$s) => \sprintf(
+        $compound = static fn (...$s): string => \sprintf('{"selectors":[%s],"type":"compound"}', \implode(',', $s));
+        $complex = static fn ($c, ...$s): string => \sprintf(
             '{"combinators":[%s],"selectors":[%s],"type":"complex"}',
             $c,
             \implode(',', $s)
         );
-        $relative = static fn ($c, $s) => \sprintf('{"combinator":"%s","selector":%s,"type":"relative"}', $c, $s);
-        $or = static fn (...$s) => \sprintf('{"selectors":[%s],"type":"or"}', \implode(',', $s));
-        $psSelector = static fn ($n, $s) => \sprintf('{"name":"%s","selector":%s,"type":"pseudo-class"}', $n, $s);
+        $relative = static fn ($c, $s): string => \sprintf(
+            '{"combinator":"%s","selector":%s,"type":"relative"}',
+            $c,
+            $s
+        );
+        $or = static fn (...$s): string => \sprintf('{"selectors":[%s],"type":"or"}', \implode(',', $s));
+        $psSelector = static fn ($n, $s): string => \sprintf(
+            '{"name":"%s","selector":%s,"type":"pseudo-class"}',
+            $n,
+            $s
+        );
 
         yield 'has#1' => [
             ':has(img)',

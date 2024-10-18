@@ -131,9 +131,8 @@ class AttributeSelector extends AbstractSelector
         if ($this->isCaseSensitive !== null) {
             $s .= $this->isCaseSensitive ? ' s' : ' i';
         }
-        $s .= ']';
 
-        return $s;
+        return $s . ']';
     }
 
     #endregion extends AbstractSelector

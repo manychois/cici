@@ -15,7 +15,7 @@ use Manychois\Cici\Selectors\Combinator;
  */
 class DomNodeMatchContext extends AbstractMatchContext
 {
-    private const NS_HTML = 'http://www.w3.org/1999/xhtml';
+    private const string NS_HTML = 'http://www.w3.org/1999/xhtml';
 
     /**
      * Creates a new instance of the match context.
@@ -175,26 +175,30 @@ class DomNodeMatchContext extends AbstractMatchContext
                 return true;
             }
 
-            $fieldset = $this->firstAncestorHtmlElement($target, false, function (\DOMElement $node) use ($target) {
-                if ($node->localName !== 'fieldset') {
-                    return false;
-                }
-                if (!$node->hasAttribute('disabled')) {
-                    return false;
-                }
-
-                foreach ($this->loopChildren($node) as $child) {
-                    if ($this->isHtmlElement($child, 'legend')) {
-                        return $this->firstDescendantHtmlElement(
-                            $child,
-                            false,
-                            static fn ($e) => $e === $target
-                        ) === null;
+            $fieldset = $this->firstAncestorHtmlElement(
+                $target,
+                false,
+                function (\DOMElement $node) use ($target): bool {
+                    if ($node->localName !== 'fieldset') {
+                        return false;
                     }
-                }
+                    if (!$node->hasAttribute('disabled')) {
+                        return false;
+                    }
 
-                return true;
-            });
+                    foreach ($this->loopChildren($node) as $child) {
+                        if ($this->isHtmlElement($child, 'legend')) {
+                            return $this->firstDescendantHtmlElement(
+                                $child,
+                                false,
+                                static fn ($e): bool => $e === $target
+                            ) === null;
+                        }
+                    }
+
+                    return true;
+                }
+            );
             if ($fieldset !== null) {
                 return true;
             }
@@ -257,7 +261,7 @@ class DomNodeMatchContext extends AbstractMatchContext
             }
         } elseif ($this->isHtmlElement($target)) {
             \assert($target instanceof \DOMElement);
-            $isContentEditable = function (\DOMElement $ele) {
+            $isContentEditable = function (\DOMElement $ele): bool {
                 $value = $this->getAttributeValue($ele, 'contenteditable');
 
                 return $value !== null && $value !== 'false';

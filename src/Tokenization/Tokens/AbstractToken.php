@@ -44,7 +44,7 @@ abstract class AbstractToken implements \JsonSerializable, \Stringable
      */
     final public static function escape(string $literal, string $pattern): string
     {
-        $fn = static function (array $matches) {
+        $fn = static function (array $matches): string {
             $chr = $matches[0];
             $code = \mb_ord($chr, 'UTF-8');
             if ($code === false) {

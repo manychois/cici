@@ -669,7 +669,7 @@ class SelectorParser
 
             return null;
         };
-        $isPipe = static fn ($token) => $token instanceof DelimToken && $token->value === '|';
+        $isPipe = static fn ($token): bool => $token instanceof DelimToken && $token->value === '|';
 
         $startIndex = $tokenStream->position;
         $token = $tokenStream->tryConsume();

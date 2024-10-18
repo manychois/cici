@@ -7,21 +7,21 @@ namespace Manychois\Cici\Utilities;
 /**
  * Represents the result of a regular expression match.
  */
-final class RegexResult
+final readonly class RegexResult
 {
     /**
      * Whether the regular expression matches the subject.
      */
-    public readonly bool $success;
+    public bool $success;
     /**
      * The matched value.
      */
-    public readonly string $value;
+    public string $value;
     /**
      * The offset of the matched value in the subject.
      * If the offset is not available, it is -1.
      */
-    public readonly int $offset;
+    public int $offset;
 
     /**
      * Matches the specified regular expression pattern against the specified subject.

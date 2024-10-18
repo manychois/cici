@@ -7,6 +7,7 @@ namespace Manychois\CiciTests\UnitTests\Parsing;
 use Manychois\Cici\Exceptions\ParseException;
 use Manychois\Cici\Exceptions\ParseExceptionCollection;
 use Manychois\Cici\Parsing\SelectorParser;
+use Manychois\Cici\Selectors\AbstractSelector;
 use Manychois\Cici\Tokenization\TextStream;
 use Manychois\Cici\Tokenization\Tokenizer;
 use Manychois\Cici\Tokenization\TokenStream;
@@ -157,8 +158,8 @@ class SelectorParserTest extends TestCase
 
     public static function provideTryParseComplexSelector(): \Generator
     {
-        $c = static fn ($s) => '{"selectors":[' . $s . '],"type":"compound"}';
-        $and = static fn ($s) => '{"selectors":[' . $s . '],"type":"and"}';
+        $c = static fn ($s): string => '{"selectors":[' . $s . '],"type":"compound"}';
+        $and = static fn ($s): string => '{"selectors":[' . $s . '],"type":"and"}';
 
         yield [
             'div > :hover [required]',
@@ -340,7 +341,11 @@ class SelectorParserTest extends TestCase
     public function testTryParseCommaSeparatedList(string $input, string $expectedJson, int $indexAfter): void
     {
         $tokenStream = $this->convertToTokenStream($input);
-        $parseComplexSelector = fn () => $this->parser->tryParseComplexSelector($tokenStream, false, false);
+        $parseComplexSelector = fn (): ?AbstractSelector => $this->parser->tryParseComplexSelector(
+            $tokenStream,
+            false,
+            false
+        );
         $typeSelector = $this->parser->tryParseCommaSeparatedList($tokenStream, $parseComplexSelector);
         $this->assertSame($expectedJson, Json::encode($typeSelector));
         $this->assertSame($indexAfter, $tokenStream->position);

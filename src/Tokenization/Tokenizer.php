@@ -492,7 +492,7 @@ class Tokenizer
         $tokenOffset = $textStream->position;
         $firstSegment = \substr($regexResult->value, 2, 6);
         $textStream->position += 2 + \strlen($firstSegment);
-        if (\strpos($firstSegment, '?') !== false) {
+        if (\str_contains($firstSegment, '?')) {
             $start = \hexdec(\str_replace('?', '0', $firstSegment));
             \assert(\is_int($start));
             $end = \hexdec(\str_replace('?', 'F', $firstSegment));
@@ -573,7 +573,7 @@ class Tokenizer
         $ch = $textStream->peek(1);
         $offset = $textStream->position;
 
-        if (\strpos('01234567890+-.', $ch) !== false) {
+        if (\str_contains('01234567890+-.', $ch)) {
             $numeric = $this->tryConsumeNumericToken($textStream);
             if ($numeric !== null) {
                 return $numeric;

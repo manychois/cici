@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manychois\Cici\Parsing;
 
 use Manychois\Cici\Selectors\AbstractPseudoSelector;
+use Manychois\Cici\Selectors\AbstractSelector;
 use Manychois\Cici\Selectors\PseudoClasses\AnyLinkPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\ChildIndexedPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\EmptyPseudoClass;
@@ -16,6 +17,7 @@ use Manychois\Cici\Selectors\PseudoClasses\RootPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\ScopePseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\TypedChildIndexedPseudoClass;
 use Manychois\Cici\Selectors\PseudoClasses\UnknownPseudoClassSelector;
+use Manychois\Cici\Selectors\RelativeSelector;
 use Manychois\Cici\Tokenization\Tokens\AbstractToken;
 use Manychois\Cici\Tokenization\Tokens\FunctionToken;
 use Manychois\Cici\Tokenization\Tokens\IdentToken;
@@ -148,7 +150,7 @@ class PseudoSelectorParser
                 if (!$hasWs) {
                     throw $tokenStream->recordParseException($invalidErrMsg);
                 }
-                $inner = fn () => $this->main->tryParseComplexSelector($tokenStream, true, false);
+                $inner = fn (): ?AbstractSelector => $this->main->tryParseComplexSelector($tokenStream, true, false);
                 $of = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);
                 if ($of === null) {
                     throw $tokenStream->recordParseException($invalidErrMsg);
@@ -168,12 +170,14 @@ class PseudoSelectorParser
      */
     private function parseHasPseudoClass(TokenStream $tokenStream): HasPseudoClass
     {
-        $findHas = static fn (AbstractToken $t) => $t instanceof FunctionToken && \strtolower($t->value) === 'has';
+        $findHas = static fn (AbstractToken $t): bool => $t instanceof FunctionToken && \strtolower(
+            $t->value
+        ) === 'has';
         $nestedHas = $tokenStream->first($findHas);
         if ($nestedHas !== null) {
             throw $tokenStream->recordParseException('The :has() pseudo-class cannot be nested.', $nestedHas->offset);
         }
-        $inner = fn () => $this->main->tryParseRelativeSelector($tokenStream, false);
+        $inner = fn (): ?RelativeSelector => $this->main->tryParseRelativeSelector($tokenStream, false);
         $selector = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);
         if ($selector === null) {
             throw $tokenStream->recordParseException('Invalid argument for the :has() pseudo-class.');
@@ -206,7 +210,7 @@ class PseudoSelectorParser
      */
     private function parseNotPseudoClass(TokenStream $tokenStream): NotPseudoClass
     {
-        $inner = fn () => $this->main->tryParseComplexSelector($tokenStream, true, true);
+        $inner = fn (): ?AbstractSelector => $this->main->tryParseComplexSelector($tokenStream, true, true);
         $selector = $this->main->tryParseCommaSeparatedList($tokenStream, $inner);
         if ($selector === null) {
             throw $tokenStream->recordParseException('Invalid argument for the :not() pseudo-class.');

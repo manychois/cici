@@ -59,7 +59,7 @@ class ChildIndexedPseudoClass extends AbstractPseudoSelector
         }
 
         if ($this->of !== null) {
-            $siblings = \array_filter($siblings, fn ($ele) => $this->of->matches($context, $ele));
+            $siblings = \array_filter($siblings, fn ($ele): bool => $this->of->matches($context, $ele));
             $siblings = \array_values($siblings);
         }
         $index = \array_search($target, $siblings, true);
