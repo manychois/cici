@@ -29,6 +29,7 @@ class PseudoElementSelector extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         throw new \RuntimeException('Matching pseudo-elements is not supported.');
@@ -37,6 +38,7 @@ class PseudoElementSelector extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return "::{$this->name}";

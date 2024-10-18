@@ -29,6 +29,7 @@ class TypeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -40,6 +41,7 @@ class TypeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         return $context->matchElementType($target, $this->wqName);
@@ -48,6 +50,7 @@ class TypeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return $this->wqName->__toString();

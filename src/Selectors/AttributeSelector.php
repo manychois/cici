@@ -39,6 +39,7 @@ class AttributeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         $json = [
@@ -61,6 +62,7 @@ class AttributeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         $actual = $context->getAttributeValue($target, $this->wqName);
@@ -116,6 +118,7 @@ class AttributeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         $s = '[' . $this->wqName->__toString();

@@ -25,6 +25,7 @@ class AnyLinkPseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         if ($context->isHtmlElement($target, 'a', 'area')) {

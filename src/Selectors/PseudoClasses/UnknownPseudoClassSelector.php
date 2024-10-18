@@ -31,6 +31,7 @@ class UnknownPseudoClassSelector extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         throw new \RuntimeException(\sprintf('Matching pseudo-class :%s is not supported.', $this->name));

@@ -38,6 +38,7 @@ class WqName implements \JsonSerializable, \Stringable
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         if ($this->prefixSpecified) {
@@ -57,6 +58,7 @@ class WqName implements \JsonSerializable, \Stringable
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         $localName = $this->localName === '*' ? '*' : AbstractToken::escapeIdent($this->localName);

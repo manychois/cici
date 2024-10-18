@@ -14,6 +14,7 @@ class StringToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return ['type' => 'string', 'value' => $this->value];
@@ -22,6 +23,7 @@ class StringToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \sprintf('"%s"', self::escape($this->value, '/["\\n\\\\]/'));

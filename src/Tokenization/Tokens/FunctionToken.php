@@ -14,6 +14,7 @@ class FunctionToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -25,6 +26,7 @@ class FunctionToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return self::escapeIdent($this->value) . '(';

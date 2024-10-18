@@ -31,6 +31,7 @@ class RelativeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -43,6 +44,7 @@ class RelativeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         foreach ($context->loopRightCandidates($target, $this->combinator) as $candidate) {
@@ -57,6 +59,7 @@ class RelativeSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \ltrim($this->combinator->value . $this->selector->__toString());

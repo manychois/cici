@@ -14,6 +14,7 @@ class DelimToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -25,6 +26,7 @@ class DelimToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return $this->value;

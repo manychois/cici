@@ -14,6 +14,7 @@ class UrlToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -25,6 +26,7 @@ class UrlToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         $pattern = '/[' . \preg_quote('"\'()\\', '/') . '\\s' . self::NON_PRINTABLE_CODEPOINTS . ']/u';

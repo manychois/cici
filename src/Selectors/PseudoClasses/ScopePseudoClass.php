@@ -25,6 +25,7 @@ class ScopePseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         return $context->scope === $target;

@@ -25,6 +25,7 @@ class RootPseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         return $context->root === $target;

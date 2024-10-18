@@ -31,6 +31,7 @@ class ClassSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -42,6 +43,7 @@ class ClassSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         if ($this->containsWhitespace) {
@@ -62,6 +64,7 @@ class ClassSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return '.' . AbstractToken::escapeIdent($this->className);

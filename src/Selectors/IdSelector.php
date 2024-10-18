@@ -26,6 +26,7 @@ class IdSelector extends AbstractSelector
 
     #region extends AbstractSelector
 
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -37,6 +38,7 @@ class IdSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         $actual = $context->getAttributeValue($target, 'id');
@@ -47,6 +49,7 @@ class IdSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return '#' . AbstractToken::escapeIdent($this->id);

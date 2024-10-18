@@ -14,6 +14,7 @@ class NumberToken extends AbstractNumericToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -27,6 +28,7 @@ class NumberToken extends AbstractNumericToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \strval($this->value);

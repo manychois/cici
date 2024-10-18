@@ -42,6 +42,7 @@ class ComplexSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -54,6 +55,7 @@ class ComplexSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         $count = \count($this->selectors);
@@ -85,6 +87,7 @@ class ComplexSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         $count = \count($this->selectors);

@@ -35,6 +35,7 @@ class IsWherePseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -47,6 +48,7 @@ class IsWherePseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         return $this->selector->matches($context, $target);
@@ -55,6 +57,7 @@ class IsWherePseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \sprintf(':%s(%s)', $this->name, $this->selector->__toString());

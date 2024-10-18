@@ -34,6 +34,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function areOfSameElementType(object $node1, object $node2): bool
     {
         return $node1 instanceof \DOMElement &&
@@ -45,6 +46,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function getAttributeValue(object $target, string|WqName $wqName): ?string
     {
         if (!($target instanceof \DOMElement)) {
@@ -90,6 +92,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function getNodeType(object $target): NodeType
     {
         return match ($target->nodeType) {
@@ -106,6 +109,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function getParentNode(object $target): ?object
     {
         return $target->parentNode;
@@ -114,6 +118,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function getRadioButtonGroup(object $target): array
     {
         \assert($target instanceof \DOMElement);
@@ -158,6 +163,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function isActuallyDisabled(object $target): bool
     {
         if (!$this->isHtmlElement($target)) {
@@ -218,6 +224,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function isHtmlElement(object $target, string ...$localNames): bool
     {
         if ($target instanceof \DOMElement) {
@@ -232,6 +239,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function isReadWritable(object $target): bool
     {
         $readWrite = false;
@@ -265,6 +273,7 @@ class DomNodeMatchContext extends AbstractMatchContext
      *
      * @return \Generator<int,\DOMElement|\DOMDocument|\DOMDocumentFragment>
      */
+    #[\Override]
     public function loopAncestors(object $target, bool $includeSelf): Generator
     {
         if ($includeSelf) {
@@ -291,6 +300,7 @@ class DomNodeMatchContext extends AbstractMatchContext
      *
      * @return \Generator<int,\DOMElement>
      */
+    #[\Override]
     public function loopChildren(object $target): \Generator
     {
         foreach ($target->childNodes as $child) {
@@ -307,6 +317,7 @@ class DomNodeMatchContext extends AbstractMatchContext
      *
      * @return \Generator<int,\DOMNode>
      */
+    #[\Override]
     public function loopDescendants(object $target, bool $includeSelf): \Generator
     {
         if ($includeSelf) {
@@ -335,6 +346,7 @@ class DomNodeMatchContext extends AbstractMatchContext
      *
      * @return \Generator<int,\DOMElement|\DOMDocumentFragment>
      */
+    #[\Override]
     public function loopLeftCandidates(object $target, Combinator $combinator): \Generator
     {
         \assert($target instanceof \DOMElement);
@@ -373,6 +385,7 @@ class DomNodeMatchContext extends AbstractMatchContext
      *
      * @return \Generator<int,\DOMElement>
      */
+    #[\Override]
     public function loopRightCandidates(object $target, Combinator $combinator): \Generator
     {
         if ($combinator === Combinator::Descendant) {
@@ -406,6 +419,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matchElementType(object $target, WqName $wqName): bool
     {
         if (!($target instanceof \DOMElement)) {
@@ -439,6 +453,7 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matchDefaultNamespace(object $target): bool
     {
         if (\array_key_exists('', $this->nsLookup)) {

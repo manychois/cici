@@ -57,6 +57,7 @@ class AnbNotation implements \JsonSerializable, \Stringable
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         $json = [
@@ -77,6 +78,7 @@ class AnbNotation implements \JsonSerializable, \Stringable
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         if ($this->keyword !== '') {

@@ -14,6 +14,7 @@ class WhitespaceToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return ' ';
@@ -22,6 +23,7 @@ class WhitespaceToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return ' ';

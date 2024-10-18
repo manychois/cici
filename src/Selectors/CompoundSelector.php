@@ -40,6 +40,7 @@ class CompoundSelector extends LogicalSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -51,6 +52,7 @@ class CompoundSelector extends LogicalSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         if (!$this->ignoreDefaultNamespace && !($this->selectors[0] instanceof TypeSelector)) {

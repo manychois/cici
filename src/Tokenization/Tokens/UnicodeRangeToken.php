@@ -33,6 +33,7 @@ class UnicodeRangeToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -46,6 +47,7 @@ class UnicodeRangeToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         if ($this->start === $this->end) {

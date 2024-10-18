@@ -27,6 +27,7 @@ class HashToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -39,6 +40,7 @@ class HashToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         $pattern = '/[^' . self::IDENT_CODEPOINTS . ']/u';

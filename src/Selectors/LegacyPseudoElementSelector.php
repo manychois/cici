@@ -24,6 +24,7 @@ class LegacyPseudoElementSelector extends PseudoElementSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -35,6 +36,7 @@ class LegacyPseudoElementSelector extends PseudoElementSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return ':' . $this->name;

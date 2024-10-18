@@ -36,6 +36,7 @@ class LogicalSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -47,6 +48,7 @@ class LogicalSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         if ($this->isAnd) {
@@ -71,6 +73,7 @@ class LogicalSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \implode($this->isAnd ? '' : ',', $this->selectors);

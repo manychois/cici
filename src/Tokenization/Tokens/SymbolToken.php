@@ -30,6 +30,7 @@ class SymbolToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return $this->value->value;
@@ -38,6 +39,7 @@ class SymbolToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return $this->value->value;

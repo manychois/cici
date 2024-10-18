@@ -14,6 +14,7 @@ class AtKeywordToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return ['type' => 'at-keyword', 'value' => $this->value];
@@ -22,6 +23,7 @@ class AtKeywordToken extends AbstractLiteralToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return '@' . self::escapeIdent($this->value);

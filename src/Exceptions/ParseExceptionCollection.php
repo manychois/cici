@@ -47,6 +47,7 @@ class ParseExceptionCollection implements \Countable, \IteratorAggregate
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function count(): int
     {
         return \count($this->exceptions);
@@ -61,6 +62,7 @@ class ParseExceptionCollection implements \Countable, \IteratorAggregate
      *
      * @return \ArrayIterator<int,ParseException>
      */
+    #[\Override]
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->exceptions);

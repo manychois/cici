@@ -14,6 +14,7 @@ class BadUrlToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return ['type' => 'bad-url'];
@@ -22,6 +23,7 @@ class BadUrlToken extends AbstractToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return 'url(bad-url)';

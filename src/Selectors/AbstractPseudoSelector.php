@@ -41,6 +41,7 @@ abstract class AbstractPseudoSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         if ($this->isFunctional) {
@@ -60,6 +61,7 @@ abstract class AbstractPseudoSelector extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         if ($this->isFunctional) {

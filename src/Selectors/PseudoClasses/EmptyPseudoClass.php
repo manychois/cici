@@ -26,6 +26,7 @@ class EmptyPseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         $isEmpty = true;

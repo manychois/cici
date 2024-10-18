@@ -33,6 +33,7 @@ class DimensionToken extends AbstractNumericToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -47,6 +48,7 @@ class DimensionToken extends AbstractNumericToken
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \strval($this->value) . self::escapeIdent($this->unit);

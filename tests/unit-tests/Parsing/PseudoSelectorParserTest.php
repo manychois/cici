@@ -183,6 +183,7 @@ class PseudoSelectorParserTest extends TestCase
 
     #region extends TestCase
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->mainParser = new SelectorParser();

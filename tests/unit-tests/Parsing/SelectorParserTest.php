@@ -348,6 +348,7 @@ class SelectorParserTest extends TestCase
 
     #region extends TestCase
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->parser = new SelectorParser();

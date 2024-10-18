@@ -31,6 +31,7 @@ class ForgivingSelectorList extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         return [
@@ -42,6 +43,7 @@ class ForgivingSelectorList extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         if (\count($this->selectors) === 0) {
@@ -64,6 +66,7 @@ class ForgivingSelectorList extends AbstractSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         return \implode(',', $this->selectors);

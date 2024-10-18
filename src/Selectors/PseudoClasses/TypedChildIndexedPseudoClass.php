@@ -34,6 +34,7 @@ class TypedChildIndexedPseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function matches(AbstractMatchContext $context, object $target): bool
     {
         $parent = $context->getParentNode($target);
@@ -78,6 +79,7 @@ class TypedChildIndexedPseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function jsonSerialize(): mixed
     {
         /** @var array<string,mixed> $json */
@@ -96,6 +98,7 @@ class TypedChildIndexedPseudoClass extends AbstractPseudoSelector
     /**
      * @inheritDoc
      */
+    #[\Override]
     public function __toString(): string
     {
         if (!$this->isFunctional) {
