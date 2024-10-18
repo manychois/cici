@@ -73,7 +73,7 @@ class LogicalSelector extends AbstractSelector
      */
     public function __toString(): string
     {
-        return \implode('', $this->selectors);
+        return \implode($this->isAnd ? '' : ',', $this->selectors);
     }
 
     #endregion extends AbstractSelector

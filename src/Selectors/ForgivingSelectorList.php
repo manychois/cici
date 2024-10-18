@@ -66,7 +66,7 @@ class ForgivingSelectorList extends AbstractSelector
      */
     public function __toString(): string
     {
-        return \implode(',', \array_map(static fn ($s) => $s->__toString(), $this->selectors));
+        return \implode(',', $this->selectors);
     }
 
     #endregion extends AbstractSelector

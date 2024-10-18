@@ -33,7 +33,7 @@ class UnknownPseudoClassSelector extends AbstractPseudoSelector
      */
     public function matches(AbstractMatchContext $context, object $target): bool
     {
-        throw new \RuntimeException(\sprintf('Matching pseudo-class %s is not supported.', $this->name));
+        throw new \RuntimeException(\sprintf('Matching pseudo-class :%s is not supported.', $this->name));
     }
 
     #endregion extends AbstractPseudoSelector

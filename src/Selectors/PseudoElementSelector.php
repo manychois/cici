@@ -34,5 +34,13 @@ class PseudoElementSelector extends AbstractPseudoSelector
         throw new \RuntimeException('Matching pseudo-elements is not supported.');
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        return "::{$this->name}";
+    }
+
     #endregion extends AbstractPseudoSelector
 }
