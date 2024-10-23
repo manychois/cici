@@ -68,7 +68,7 @@ class TypedChildIndexedPseudoClass extends AbstractPseudoSelector
         $index = match ($this->name) {
             'nth-of-type' => $index + 1,
             'nth-last-of-type' => $count - $index,
-            default => 0,
+            default => throw new \LogicException(\sprintf('Unexpected pseudo-class :%s.', $this->name)),
         };
 
         \assert($this->anb !== null);

@@ -24,8 +24,8 @@ class IdSelectorTest extends TestCase
         $context = new DomNodeMatchContext($root, $scope, $nsLookup);
 
         $idSelector = new IdSelector('one');
-        $this->assertTrue($idSelector->matches($context, $root));
-        $this->assertFalse($idSelector->matches($context, $head));
+        self::assertTrue($idSelector->matches($context, $root));
+        self::assertFalse($idSelector->matches($context, $head));
     }
 
     public function testToString(): void

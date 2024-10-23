@@ -18,7 +18,7 @@ class TextStreamTest extends TestCase
         $this->assertEquals(1, $text->length);
         $ch = $text->consume();
         $this->assertEquals("\n", $ch);
-        $this->assertFalse($text->hasMore());
+        self::assertFalse($text->hasMore());
 
         $text = "\0";
         $text = new TextStream($text, $errors);
@@ -45,7 +45,7 @@ class TextStreamTest extends TestCase
         $text = 'abc123def';
         $text = new TextStream($text, $errors);
         $result = $text->matchRegex('/\d+/', true);
-        $this->assertTrue($result->success);
+        self::assertTrue($result->success);
         $this->assertEquals('123', $result->value);
         $this->assertEquals(3, $result->offset);
     }

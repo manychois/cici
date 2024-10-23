@@ -40,10 +40,10 @@ class TokenStreamTest extends TestCase
         $id = new IdentToken('div', 2, 3);
         $tokenStream = new TokenStream([$ws1, $ws2, $id], $errors);
         $hasWs = $tokenStream->skipWhitespace();
-        $this->assertTrue($hasWs);
+        self::assertTrue($hasWs);
         $this->assertSame(2, $tokenStream->position);
         $hasWs = $tokenStream->skipWhitespace();
-        $this->assertFalse($hasWs);
+        self::assertFalse($hasWs);
         $this->assertSame(2, $tokenStream->position);
         $this->assertSame($id, $tokenStream->tryConsume());
     }

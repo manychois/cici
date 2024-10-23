@@ -70,7 +70,7 @@ class ChildIndexedPseudoClass extends AbstractPseudoSelector
         $index = match ($this->name) {
             'nth-child' => $index + 1,
             'nth-last-child' => $count - $index,
-            default => 0,
+            default => throw new \LogicException(\sprintf('Unexpected pseudo-class :%s.', $this->name)),
         };
 
         \assert($this->anb !== null);

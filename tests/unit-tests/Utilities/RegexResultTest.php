@@ -12,17 +12,17 @@ class RegexResultTest extends TestCase
     public function testMatches(): void
     {
         $result = RegexResult::matches('/\d+/', 'abc123def456', 7, true);
-        $this->assertTrue($result->success);
+        self::assertTrue($result->success);
         $this->assertSame('456', $result->value);
         $this->assertSame(9, $result->offset);
 
         $result = RegexResult::matches('/\d+/', 'abcdef');
-        $this->assertFalse($result->success);
+        self::assertFalse($result->success);
         $this->assertSame('', $result->value);
         $this->assertSame(-1, $result->offset);
 
         $result = RegexResult::matches('/\d+/', 'abc123def456');
-        $this->assertTrue($result->success);
+        self::assertTrue($result->success);
         $this->assertSame('123', $result->value);
         $this->assertSame(-1, $result->offset);
     }

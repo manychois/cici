@@ -69,7 +69,6 @@ class InputPseudoClass extends AbstractPseudoSelector
         }
         if ($this->name === 'checked') {
             if ($context->isHtmlElement($target, 'input')) {
-                \assert($target instanceof \DOMElement);
                 $type = $context->getAttributeValue($target, 'type');
                 if ($type === 'checkbox' || $type === 'radio') {
                     return $context->getAttributeValue($target, 'checked') !== null;
@@ -80,7 +79,6 @@ class InputPseudoClass extends AbstractPseudoSelector
         }
         if ($this->name === 'indeterminate') {
             if ($context->isHtmlElement($target, 'input')) {
-                \assert($target instanceof \DOMElement);
                 $type = $context->getAttributeValue($target, 'type');
                 if ($type === 'radio') {
                     $group = $context->getRadioButtonGroup($target);

@@ -20,6 +20,8 @@ abstract class AbstractSelector implements \JsonSerializable, \Stringable
      * @param TNode                       $target  The target to match.
      *
      * @return bool Whether the selector matches the target.
+     *
+     * @codeCoverageIgnore
      */
     abstract public function matches(AbstractMatchContext $context, object $target): bool;
 }

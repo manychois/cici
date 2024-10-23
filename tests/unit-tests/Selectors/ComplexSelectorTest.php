@@ -43,11 +43,11 @@ class ComplexSelectorTest extends TestCase
             Combinator::Descendant,
         ]);
 
-        $this->assertFalse($selector->matches($context, $root));
-        $this->assertFalse($selector->matches($context, $head));
-        $this->assertFalse($selector->matches($context, $title));
-        $this->assertFalse($selector->matches($context, $body));
-        $this->assertTrue($selector->matches($context, $div));
+        self::assertFalse($selector->matches($context, $root));
+        self::assertFalse($selector->matches($context, $head));
+        self::assertFalse($selector->matches($context, $title));
+        self::assertFalse($selector->matches($context, $body));
+        self::assertTrue($selector->matches($context, $div));
     }
 
     public function testToString(): void

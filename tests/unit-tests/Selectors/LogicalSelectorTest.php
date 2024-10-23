@@ -25,19 +25,19 @@ class LogicalSelectorTest extends TestCase
         $a = new ClassSelector('a');
         $b = new ClassSelector('b');
         $selector = new LogicalSelector(true, [$a, $b]);
-        $this->assertTrue($selector->matches($context, $root));
+        self::assertTrue($selector->matches($context, $root));
 
         $root->setAttribute('class', 'a c');
-        $this->assertFalse($selector->matches($context, $root));
+        self::assertFalse($selector->matches($context, $root));
 
         $selector = new LogicalSelector(false, [$a, $b]);
-        $this->assertTrue($selector->matches($context, $root));
+        self::assertTrue($selector->matches($context, $root));
 
         $root->setAttribute('class', 'b c');
-        $this->assertTrue($selector->matches($context, $root));
+        self::assertTrue($selector->matches($context, $root));
 
         $root->setAttribute('class', 'c d');
-        $this->assertFalse($selector->matches($context, $root));
+        self::assertFalse($selector->matches($context, $root));
     }
 
     public function testToString(): void
