@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Manychois\CiciTests\UnitTests\Matching;
 
+use Manychois\Cici\Matching\AbstractMatchContext;
 use Manychois\Cici\Matching\DomNodeMatchContext;
+use Manychois\Cici\Matching\NodeType;
 use Manychois\Cici\Parsing\WqName;
 use Manychois\Cici\Selectors\Combinator;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -135,6 +137,105 @@ class DomNodeMatchContextTest extends TestCase
         yield [$context2, $html, new WqName(false, null, 'html'), false];
         yield [$context2, $svg, new WqName(true, null, 'svg'), false];
         yield [$context2, $svg, new WqName(false, null, 'svg'), true];
+    }
+
+    public static function provideIsActuallyDisabled(): \Generator
+    {
+        $nsLookup = [];
+        $doc = new \DOMDocument();
+        $html = $doc->createElement('html');
+        $context = new DomNodeMatchContext($html, $html, $nsLookup);
+
+        yield [$context, $doc, false];
+
+        $rawHtml = <<<'HTML'
+        <html id="html">
+            <form>
+                <fieldset disabled>
+                    <legend>
+                        <!-- they are not considered as disabled -->
+                        <span>Some text</span>
+                        <button id="button">Some button</button>
+                    </legend>
+                    <input id="input1">
+                </fieldset>
+            </form>
+        </html>
+        HTML;
+        $doc = new \DOMDocument();
+        $doc->loadHTML($rawHtml);
+        $html = $doc->getElementById('html');
+        \assert($html !== null);
+        $context = new DomNodeMatchContext($html, $html, $nsLookup);
+        $input1 = $doc->getElementById('input1');
+
+        yield [$context, $input1, true];
+
+        $button = $doc->getElementById('button');
+
+        yield [$context, $button, false];
+
+        $rawHtml = <<<'HTML'
+        <html id="html">
+            <form>
+                <fieldset>
+                    <input id="input1">
+                </fieldset>
+            </form>
+        </html>
+        HTML;
+        $doc = new \DOMDocument();
+        $doc->loadHTML($rawHtml);
+        $html = $doc->getElementById('html');
+        \assert($html !== null);
+        $context = new DomNodeMatchContext($html, $html, $nsLookup);
+        $input1 = $doc->getElementById('input1');
+
+        yield [$context, $input1, false];
+
+        $rawHtml = <<<'HTML'
+        <html id="html">
+            <form>
+                <fieldset disabled>
+                    <fieldset id="fieldset1">
+                    </fieldset>
+                </fieldset>
+            </form>
+        </html>
+        HTML;
+        $doc = new \DOMDocument();
+        $doc->loadHTML($rawHtml);
+        $html = $doc->getElementById('html');
+        \assert($html !== null);
+        $context = new DomNodeMatchContext($html, $html, $nsLookup);
+        $fieldset1 = $doc->getElementById('fieldset1');
+
+        yield [$context, $fieldset1, true];
+
+        $rawHtml = <<<'HTML'
+        <html id="html">
+            <optgroup id="optgroup" disabled>
+                <option id="option1">Option 1</option>
+                <option id="option2" disabled>Option 2</option>
+            </optgroup>
+        </html>
+        HTML;
+        $doc = new \DOMDocument();
+        $doc->loadHTML($rawHtml);
+        $html = $doc->getElementById('html');
+        \assert($html !== null);
+        $optgroup = $doc->getElementById('optgroup');
+        $context = new DomNodeMatchContext($html, $html, $nsLookup);
+
+        yield [$context, $optgroup, true];
+
+        $option1 = $doc->getElementById('option1');
+
+        yield [$context, $option1, true];
+
+        $option2 = $doc->getElementById('option2');
+
+        yield [$context, $option2, true];
     }
 
     public function testLoopChildren(): void
@@ -352,5 +453,134 @@ class DomNodeMatchContextTest extends TestCase
         $context2 = new DomNodeMatchContext($html, $html, []);
         static::assertTrue($context2->matchDefaultNamespace($html));
         static::assertTrue($context2->matchDefaultNamespace($custom));
+    }
+
+    public function testGetAttributeValeOnNonElement(): void
+    {
+        $context = $this->createSimpleMatchContext();
+        $value = $context->getAttributeValue(new \DOMDocument(), 'class');
+        static::assertNull($value);
+    }
+
+    public function testGetNodeType(): void
+    {
+        $context = $this->createSimpleMatchContext();
+        $doc = new \DOMDocument();
+        static::assertSame(NodeType::Document, $context->getNodeType($doc));
+
+        $html = $doc->createElement('html');
+        static::assertSame(NodeType::Element, $context->getNodeType($html));
+
+        $text = $doc->createTextNode('text');
+        static::assertSame(NodeType::Text, $context->getNodeType($text));
+
+        $comment = $doc->createComment('comment');
+        static::assertSame(NodeType::Comment, $context->getNodeType($comment));
+
+        $doctype = $doc->implementation->createDocumentType('html');
+        static::assertSame(NodeType::DocumentType, $context->getNodeType($doctype));
+
+        $fragment = $doc->createDocumentFragment();
+        static::assertSame(NodeType::DocumentFragment, $context->getNodeType($fragment));
+
+        $cdata = $doc->createCDATASection('cdata');
+        static::assertSame(NodeType::Unsupported, $context->getNodeType($cdata));
+    }
+
+    public function testGetRadioButtonGroup(): void
+    {
+        $html = <<<'HTML'
+        <form>
+            <input type="radio" id="r1">
+            <input type="radio" id="r2" name="group1">
+            <input type="radio" id="r3" name="group2">
+            <fieldset>
+                <input type="radio" id="r4" name="group1">
+                <input type="radio" id="r5" name="group2">
+            </fieldset>
+        </form>
+        HTML;
+
+        $doc = new \DOMDocument();
+        $doc->loadHTML($html);
+        $context = new DomNodeMatchContext($doc, $doc, []);
+
+        $radios = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $radio = $doc->getElementById('r' . $i);
+            \assert($radio !== null);
+            $radios[] = $radio;
+        }
+
+        $printGroup = static fn (array $group): string => \implode(
+            ',',
+            \array_map(static fn (\DOMElement $ele): string => $ele->getAttribute('id'), $group)
+        );
+
+        $group = $context->getRadioButtonGroup($radios[0]);
+        static::assertSame('r1', $printGroup($group));
+        $group = $context->getRadioButtonGroup($radios[1]);
+        static::assertSame('r2,r4', $printGroup($group));
+        $group = $context->getRadioButtonGroup($radios[2]);
+        static::assertSame('r3,r5', $printGroup($group));
+        $group = $context->getRadioButtonGroup($radios[3]);
+        static::assertSame('r2,r4', $printGroup($group));
+        $group = $context->getRadioButtonGroup($radios[4]);
+        static::assertSame('r3,r5', $printGroup($group));
+
+        $orphan = $doc->createElement('input');
+        $orphan->setAttribute('id', 'r6');
+        $orphan->setAttribute('type', 'radio');
+        $orphan->setAttribute('name', 'group3');
+        $group = $context->getRadioButtonGroup($orphan);
+        static::assertSame('r6', $printGroup($group));
+    }
+
+    #[DataProvider('provideIsActuallyDisabled')]
+    public function testIsActuallyDisabled(DomNodeMatchContext $context, object $target, bool $expected): void
+    {
+        static::assertSame($expected, $context->isActuallyDisabled($target));
+    }
+
+    public function testIsReadWritableOnTextarea(): void
+    {
+        $rawHtml = <<<'HTML'
+        <form id="form">
+            <textarea id="ta1"></textarea>
+            <textarea id="ta2" readonly></textarea>
+            <textarea id="ta3" disabled></textarea>
+        </form>
+        HTML;
+
+        $doc = new \DOMDocument();
+        $doc->loadHTML($rawHtml);
+        $form = $doc->getElementById('form');
+        \assert($form !== null);
+        $context = new DomNodeMatchContext($form, $form, []);
+
+        $ta1 = $doc->getElementById('ta1');
+        $ta2 = $doc->getElementById('ta2');
+        $ta3 = $doc->getElementById('ta3');
+
+        static::assertTrue($context->isReadWritable($ta1));
+        static::assertFalse($context->isReadWritable($ta2));
+        static::assertFalse($context->isReadWritable($ta3));
+    }
+
+    public function testMatchElementTypeOnNonElement(): void
+    {
+        $context = $this->createSimpleMatchContext();
+        $doc = new \DOMDocument();
+        $actual = $context->matchElementType($doc, new WqName(true, null, 'html'));
+        static::assertFalse($actual);
+    }
+
+    private function createSimpleMatchContext(): AbstractMatchContext
+    {
+        $doc = new \DOMDocument();
+        $html = $doc->createElement('html');
+        $nsLookup = [];
+
+        return new DomNodeMatchContext($html, $html, $nsLookup);
     }
 }
