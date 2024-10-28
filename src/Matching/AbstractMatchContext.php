@@ -15,9 +15,9 @@ use Manychois\Cici\Selectors\Combinator;
 abstract class AbstractMatchContext
 {
     /**
-     * @var TNode
+     * @var ?TNode
      */
-    public readonly object $root;
+    public readonly ?object $root;
     /**
      * @var TNode
      */
@@ -28,11 +28,11 @@ abstract class AbstractMatchContext
     protected readonly array $nsLookup;
 
     /**
-     * @param TNode                $root     The root node of the DOM tree.
-     * @param TNode                $scope    The node to start matching from.
+     * @param TNode|null           $root     The root node of the DOM tree, if any.
+     * @param TNode                $scope    The node which its descendants will be matched.
      * @param array<string,string> $nsLookup The namespace lookup table.
      */
-    public function __construct(object $root, object $scope, array $nsLookup)
+    public function __construct(?object $root, object $scope, array $nsLookup)
     {
         $this->root = $root;
         $this->scope = $scope;

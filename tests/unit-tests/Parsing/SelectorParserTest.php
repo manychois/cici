@@ -237,6 +237,12 @@ class SelectorParserTest extends TestCase
         yield ['#id-1', '{"selectors":[{"id":"id-1","type":"id"}],"type":"compound"}', 1];
     }
 
+    public static function provideParseSelectorListInvalidInput(): \Generator
+    {
+        yield ['!a,b,c'];
+        yield ['a,b,c!'];
+    }
+
     #[DataProvider('provideTryParseWqName')]
     public function testTryParseWqName(
         string $input,
@@ -349,6 +355,28 @@ class SelectorParserTest extends TestCase
         $typeSelector = $this->parser->tryParseCommaSeparatedList($tokenStream, $parseComplexSelector);
         $this->assertSame($expectedJson, Json::encode($typeSelector));
         $this->assertSame($indexAfter, $tokenStream->position);
+    }
+
+    public function testParseSelectorList(): void
+    {
+        $input = ' a, .b, #c ';
+        $tokenStream = $this->convertToTokenStream($input);
+        $selectorList = $this->parser->parseSelectorList($tokenStream);
+        $this->assertSame(
+            '{"selectors":[{"selectors":[{"type":"type","wqName":{"localName":"a"}}],"type":"compound"},' .
+                '{"selectors":[{"className":"b","type":"class"}],"type":"compound"},' .
+                '{"selectors":[{"id":"c","type":"id"}],"type":"compound"}],"type":"or"}',
+            Json::encode($selectorList)
+        );
+    }
+
+    #[DataProvider('provideParseSelectorListInvalidInput')]
+    public function testParseSelectorListInvalidInput(string $input): void
+    {
+        $this->expectException(ParseException::class);
+        $this->expectExceptionMessage('Invalid selector list.');
+        $tokenStream = $this->convertToTokenStream($input);
+        $this->parser->parseSelectorList($tokenStream);
     }
 
     #region extends TestCase

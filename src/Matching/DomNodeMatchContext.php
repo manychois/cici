@@ -20,11 +20,11 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * Creates a new instance of the match context.
      *
-     * @param \DOMNode             $root     The root node of the DOM tree.
-     * @param \DOMNode             $scope    The node to start matching from.
+     * @param \DOMNode|null        $root     The root node of the DOM tree, if any.
+     * @param \DOMNode             $scope    The node which its descendants will be matched.
      * @param array<string,string> $nsLookup The namespace lookup table.
      */
-    public function __construct(\DOMNode $root, \DOMNode $scope, array $nsLookup)
+    public function __construct(?\DOMNode $root, \DOMNode $scope, array $nsLookup)
     {
         parent::__construct($root, $scope, $nsLookup);
     }

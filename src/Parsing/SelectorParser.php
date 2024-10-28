@@ -248,6 +248,30 @@ class SelectorParser
     }
 
     /**
+     * Parses a selector list.
+     *
+     * @param TokenStream $tokenStream The token stream to parse.
+     *
+     * @return AbstractSelector The parsed selector list.
+     */
+    public function parseSelectorList(TokenStream $tokenStream): AbstractSelector
+    {
+        $tokenStream->skipWhitespace();
+        $inner = fn (): ?AbstractSelector => $this->tryParseComplexSelector($tokenStream, false, false);
+        $selectorList = $this->tryParseCommaSeparatedList($tokenStream, $inner);
+        if ($selectorList === null) {
+            throw $tokenStream->recordParseException('Invalid selector list.');
+        }
+
+        $tokenStream->skipWhitespace();
+        if ($tokenStream->hasMore()) {
+            throw $tokenStream->recordParseException('Invalid selector list.');
+        }
+
+        return $selectorList;
+    }
+
+    /**
      * Parses a combinator, if possible.
      * Do not skip whitespace before calling this method, as it will be parsed as a descendant combinator.
      *
