@@ -1,5 +1,12 @@
 {
   "name": "manychois/cici",
+  "description": "A PHP library which lets you use CSS selector to locate elements in an HTML document.",
+  "keywords": [
+    "css",
+    "dom",
+    "html",
+    "selector"
+  ],
   "autoload": {
     "psr-4": {
       "Manychois\\Cici\\": "src/"
