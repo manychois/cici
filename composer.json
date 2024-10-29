@@ -16,6 +16,7 @@
       "email": "manychois@manychois.com.au"
     }
   ],
+  "license": "MIT",
   "require": {
     "php": ">=8.3"
   },
@@ -44,7 +45,6 @@
     "phpcs": "phpcs --standard=phpcs.xml -s",
     "phpcbf": "phpcbf --standard=phpcs.xml || true",
     "phpstan": "phpstan analyse -c phpstan.dist.neon || true",
-    "phpstan-watch": "phpstan analyse -c phpstan.dist.neon --watch",
     "rector": "rector process",
     "code": [
       "@phpcbf",
