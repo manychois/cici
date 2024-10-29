@@ -114,4 +114,4 @@ List in alphabetical order:
 
 - All pseudo-elements, e.g. `::before`.
 - Column combinator, i.e. `||`.
-- All pseudo-classes which are not listed in the previous section. Basically anything which involes user interaction, e.g. `:hover`, will never be supported.
+- All pseudo-classes which are not listed in the previous section. Basically anything which involves user interaction, e.g. `:hover`, will never be supported.
