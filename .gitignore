@@ -1,0 +1,6 @@
+.vscode/
+coverage/
+vendor/
+*.cache
+*.code-workspace
+playground.php
