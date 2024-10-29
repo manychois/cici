@@ -1,3 +1,8 @@
+# Reference materials
+
+- https://drafts.csswg.org/css-syntax/ (25 June 2024)
+- https://drafts.csswg.org/selectors/ (22 August 2024)
+
 # The `<an+b>` type parsing rules
 
 Reference: https://drafts.csswg.org/css-syntax-3/#the-anb-type
