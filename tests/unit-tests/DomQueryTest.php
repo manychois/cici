@@ -108,4 +108,34 @@ class DomQueryTest extends TestCase
         $query = new DomQuery();
         \iterator_to_array($query->queryAll(new \DOMText('text'), 'p'));
     }
+
+    public function testClosest(): void
+    {
+        $rawHtml = <<<'HTML'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test</title>
+        </head>
+        <body class="a">
+            <div>
+                <p>Hello, world!</p>
+            </div>
+        </body>
+        </html>
+        HTML;
+
+        $doc = new \DOMDocument();
+        $doc->loadHTML($rawHtml);
+        $query = new DomQuery();
+        $p = $doc->getElementsByTagName('p')[0];
+        $ele = $query->closest($p, '.a');
+        $this->assertSame('body', $ele->tagName);
+
+        $ele = $query->closest($p, 'p');
+        $this->assertSame($p, $ele);
+
+        $ele = $query->closest($p, '.b');
+        $this->assertNull($ele);
+    }
 }

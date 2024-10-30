@@ -8,6 +8,24 @@ Cici is a PHP library which lets you use CSS selector to locate elements in an H
 composer require manychois/cici
 ```
 
+## Usage
+
+The class `Manychois\Cici\DomQuery` provides three methods to match element(s) by the given CSS selectors:
+
+- `closest(\DOMElement $element, string $selector, array $nsLookup = []): ?\DOMElement`<br>
+  Traverses the element and its parents (heading toward the document root) until it finds an element that matches
+  the specified CSS selector.
+- `query(\DOMNode $scope, string $selector, array $nsLookup = []): ?\DOMElement`<br>
+  Traverses the descendants of the node (in document order) until it finds an element that matches the specified
+  CSS selector.
+- `queryAll(\DOMNode $scope, string $selector, array $nsLookup = []): \Generator`<br>
+  Traverses the descendants of the node (in document order) and finds all elements that match the specified
+  CSS selector.
+
+They all accept an optional argument `$nsLookup` which is an associative array of namespace prefixes and URIs.
+This is useful when you need to match elements with specific namespace URI.
+If you need to define a default namespace, use the empty string `''` as the key.
+
 ## Examples
 
 ### Locate an element
@@ -114,4 +132,4 @@ List in alphabetical order:
 
 - All pseudo-elements, e.g. `::before`.
 - Column combinator, i.e. `||`.
-- All pseudo-classes which are not listed in the previous section. Basically anything which involes user interaction, e.g. `:hover`, will never be supported.
+- All pseudo-classes which are not listed in the previous section. Basically anything which involves user interaction, e.g. `:hover`, will never be supported.

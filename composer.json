@@ -1,5 +1,12 @@
 {
   "name": "manychois/cici",
+  "description": "A PHP library which lets you use CSS selector to locate elements in an HTML document.",
+  "keywords": [
+    "css",
+    "dom",
+    "html",
+    "selector"
+  ],
   "autoload": {
     "psr-4": {
       "Manychois\\Cici\\": "src/"
@@ -18,7 +25,7 @@
   ],
   "license": "MIT",
   "require": {
-    "php": ">=8.3"
+    "php": ">=8.2"
   },
   "require-dev": {
     "escapestudios/symfony2-coding-standard": "^3.15",

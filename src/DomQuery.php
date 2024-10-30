@@ -29,7 +29,32 @@ final readonly class DomQuery
     }
 
     /**
-     * Queries a DOM node using a CSS selector.
+     * Traverses the element and its parents (heading toward the document root) until it finds an element that matches
+     * the specified CSS selector.
+     *
+     * @param \DOMElement          $element  The element to start traversing from.
+     * @param string               $selector The CSS selector string.
+     * @param array<string,string> $nsLookup The namespace lookup table.
+     *
+     * @return \DOMElement|null The first matching element, or null if no element matches the selector.
+     */
+    public function closest(\DOMElement $element, string $selector, array $nsLookup = []): ?\DOMElement
+    {
+        $root = $this->getRoot($element);
+        $selectorList = $this->parseSelectorList($selector);
+        $context = new DomNodeMatchContext($root, $element, $nsLookup);
+        foreach ($context->loopAncestors($element, true) as $ancestor) {
+            if ($ancestor instanceof \DOMElement && $selectorList->matches($context, $ancestor)) {
+                return $ancestor;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Traverses the descendants of the node (in document order) until it finds an element that matches the specified
+     * CSS selector.
      *
      * @param \DOMNode             $scope    The node which its descendants will be queried.
      * @param string               $selector The CSS selector string.
@@ -56,13 +81,14 @@ final readonly class DomQuery
     }
 
     /**
-     * Queries all DOM nodes using a CSS selector.
+     * Traverses the descendants of the node (in document order) and finds all elements that match the specified
+     * CSS selector.
      *
      * @param \DOMNode             $scope    The node which its descendants will be queried.
      * @param string               $selector The CSS selector string.
      * @param array<string,string> $nsLookup The namespace lookup table.
      *
-     * @return \Generator<int,\DOMNode> The generator that yields all matching elements.
+     * @return \Generator<int,\DOMElement> The generator that yields all matching elements.
      */
     public function queryAll(\DOMNode $scope, string $selector, array $nsLookup = []): \Generator
     {
