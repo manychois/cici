@@ -1,11 +1,14 @@
-/.github           export-ignore
-/tests             export-ignore
-/.gitattributes    export-ignore
-/.gitignore        export-ignore
-/dev-notes.md      export-ignore
-/phpcs.xml         export-ignore
-/phpstan.dist.neon export-ignore
-/phpunit.xml       export-ignore
-/rector.php        export-ignore
+/.github             export-ignore
+/tests               export-ignore
+/.gitattributes      export-ignore
+/.gitignore          export-ignore
+/dev-notes.md        export-ignore
+/docker-compose.yaml export-ignore
+/Dockerfile          export-ignore
+/phpcs.xml           export-ignore
+/phpstan.dist.neon   export-ignore
+/phpunit.xml         export-ignore
+/rector.php          export-ignore
+/run-test.sh         export-ignore
 
 *.php diff=php

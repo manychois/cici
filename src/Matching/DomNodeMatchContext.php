@@ -15,7 +15,7 @@ use Manychois\Cici\Selectors\Combinator;
  */
 class DomNodeMatchContext extends AbstractMatchContext
 {
-    private const string NS_HTML = 'http://www.w3.org/1999/xhtml';
+    private const NS_HTML = 'http://www.w3.org/1999/xhtml';
 
     /**
      * Creates a new instance of the match context.
