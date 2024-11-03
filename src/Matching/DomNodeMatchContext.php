@@ -328,20 +328,14 @@ class DomNodeMatchContext extends AbstractMatchContext
             yield $target;
         }
 
-        /**
-         * @var array<int,\DOMNode> $nodes
-         */
-        $nodes = \iterator_to_array($target->childNodes);
-        while (\count($nodes) > 0) {
-            $node = \array_shift($nodes);
+        foreach ($target->childNodes as $child) {
+            yield $child;
 
-            yield $node;
+            if (!($child instanceof \DOMElement)) {
+                continue;
+            }
 
-            /**
-             * @var array<int,\DOMNode> $subNodes
-             */
-            $subNodes = \iterator_to_array($node->childNodes);
-            \array_splice($nodes, 0, 0, $subNodes);
+            yield from $this->loopDescendants($child, false);
         }
     }
 

@@ -132,4 +132,17 @@ List in alphabetical order:
 
 - All pseudo-elements, e.g. `::before`.
 - Column combinator, i.e. `||`.
-- All pseudo-classes which are not listed in the previous section. Basically anything which involves user interaction, e.g. `:hover`, will never be supported.
+- All pseudo-classes which are not listed in the previous section.
+  Basically anything which involves user interaction, e.g. `:hover`, will never be supported.
+
+
+## Performance concern
+
+This library parses the CSS selector string, builds a selector tree, and then traverses the DOM tree in depth-first
+search order to locate the element(s).
+Since everything is written in PHP, this allows a wider support of CSS selector syntax.
+However, this also means that the performance is not comparable to the native PHP functions,
+e.g. `Document->getElementById()`, `DOMXPath->query()`.
+
+In a basic performance test, this library is about 2x to 10x slower than `DOMXPath->query()`.
+You can run `composer run benchmark` to see the performance comparison.

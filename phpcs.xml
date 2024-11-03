@@ -36,6 +36,7 @@
     <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation" />
     <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedExceptions" />
     <exclude name="SlevomatCodingStandard.Namespaces.UseOnlyWhitelistedNamespaces" />
+    <exclude name="SlevomatCodingStandard.Numbers.RequireNumericLiteralSeparator.RequiredNumericLiteralSeparator" />
     <exclude name="SlevomatCodingStandard.Operators.DisallowIncrementAndDecrementOperators" />
     <exclude name="SlevomatCodingStandard.PHP.DisallowReference" />
     <exclude name="SlevomatCodingStandard.TypeHints.DisallowMixedTypeHint" />
@@ -140,6 +141,7 @@
       <property name="rootNamespaces" type="array">
         <element key="src" value="Manychois\Cici" />
         <element key="tests/unit-tests" value="Manychois\CiciTests\UnitTests" />
+        <element key="tests/benchmark" value="Manychois\CiciBenchmark" />
       </property>
     </properties>
   </rule>
