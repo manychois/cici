@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manychois\CiciTests\UnitTests\Selectors;
 
-use Manychois\Cici\Matching\AbstractMatchContext;
 use Manychois\Cici\Matching\DomNodeMatchContext;
 use Manychois\Cici\Selectors\ClassSelector;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -56,16 +55,16 @@ class ClassSelectorTest extends TestCase
     #[DataProvider('provideMatches')]
     public function testMatches(
         ClassSelector $selector,
-        AbstractMatchContext $context,
-        object $target,
+        DomNodeMatchContext $context,
+        \DOMNode $target,
         bool $expected
     ): void {
-        $this->assertEquals($expected, $selector->matches($context, $target));
+        self::assertEquals($expected, $selector->matches($context, $target));
     }
 
     #[DataProvider('provideToString')]
     public function testToString(ClassSelector $selector, string $expected): void
     {
-        $this->assertEquals($expected, $selector->__toString());
+        self::assertEquals($expected, $selector->__toString());
     }
 }

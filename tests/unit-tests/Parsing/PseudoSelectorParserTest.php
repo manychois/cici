@@ -167,8 +167,8 @@ class PseudoSelectorParserTest extends TestCase
         // Consume the first colon
         $tokenStream->tryConsume();
         $pseudoClass = $this->parser->tryParsePseudoClassSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($pseudoClass));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($pseudoClass));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParsePseudoClassSelector_invalid')]
@@ -182,7 +182,7 @@ class PseudoSelectorParserTest extends TestCase
         try {
             $this->parser->tryParsePseudoClassSelector($tokenStream);
         } catch (ParseException $e) {
-            $this->assertSame($indexAfter, $e->position);
+            self::assertSame($indexAfter, $e->position);
 
             throw $e;
         }

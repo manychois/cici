@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manychois\CiciTests\UnitTests\Selectors;
 
-use Manychois\Cici\Matching\AbstractMatchContext;
 use Manychois\Cici\Matching\DomNodeMatchContext;
 use Manychois\Cici\Parsing\WqName;
 use Manychois\Cici\Selectors\AttributeSelector;
@@ -165,16 +164,16 @@ class AttributeSelectorTest extends TestCase
     #[DataProvider('provideMatches')]
     public function testMatches(
         AttributeSelector $selector,
-        AbstractMatchContext $context,
-        object $target,
+        DomNodeMatchContext $context,
+        \DOMNode $target,
         bool $expected
     ): void {
-        $this->assertEquals($expected, $selector->matches($context, $target));
+        self::assertEquals($expected, $selector->matches($context, $target));
     }
 
     #[DataProvider('provideToString')]
     public function testToString(AttributeSelector $selector, string $expected): void
     {
-        $this->assertEquals($expected, $selector->__toString());
+        self::assertEquals($expected, $selector->__toString());
     }
 }

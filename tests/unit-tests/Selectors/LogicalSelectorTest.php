@@ -45,9 +45,9 @@ class LogicalSelectorTest extends TestCase
         $a = new ClassSelector('a');
         $b = new ClassSelector('b');
         $selector = new LogicalSelector(true, [$a, $b]);
-        $this->assertEquals('.a.b', $selector->__toString());
+        self::assertEquals('.a.b', $selector->__toString());
 
         $selector = new LogicalSelector(false, [$a, $b]);
-        $this->assertEquals('.a,.b', $selector->__toString());
+        self::assertEquals('.a,.b', $selector->__toString());
     }
 }

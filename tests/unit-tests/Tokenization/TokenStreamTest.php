@@ -17,19 +17,19 @@ class TokenStreamTest extends TestCase
         $errors = new ParseExceptionCollection();
         $tokenStream = new TokenStream([], $errors);
         $tokenStream->recordParseException('End of input!');
-        $this->assertCount(1, $errors);
+        self::assertCount(1, $errors);
         $error = $errors->get(0);
-        $this->assertSame('End of input!', $error->getMessage());
-        $this->assertSame(0, $error->position);
+        self::assertSame('End of input!', $error->getMessage());
+        self::assertSame(0, $error->position);
 
         $errors = new ParseExceptionCollection();
         $token = new WhitespaceToken(20, 1);
         $tokenStream = new TokenStream([$token], $errors);
         $tokenStream->recordParseException('Unknown whitespace.');
-        $this->assertCount(1, $errors);
+        self::assertCount(1, $errors);
         $error = $errors->get(0);
-        $this->assertSame('Unknown whitespace.', $error->getMessage());
-        $this->assertSame(20, $error->position);
+        self::assertSame('Unknown whitespace.', $error->getMessage());
+        self::assertSame(20, $error->position);
     }
 
     public function testSkipWhitepace(): void
@@ -41,10 +41,10 @@ class TokenStreamTest extends TestCase
         $tokenStream = new TokenStream([$ws1, $ws2, $id], $errors);
         $hasWs = $tokenStream->skipWhitespace();
         self::assertTrue($hasWs);
-        $this->assertSame(2, $tokenStream->position);
+        self::assertSame(2, $tokenStream->position);
         $hasWs = $tokenStream->skipWhitespace();
         self::assertFalse($hasWs);
-        $this->assertSame(2, $tokenStream->position);
-        $this->assertSame($id, $tokenStream->tryConsume());
+        self::assertSame(2, $tokenStream->position);
+        self::assertSame($id, $tokenStream->tryConsume());
     }
 }

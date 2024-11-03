@@ -15,19 +15,19 @@ class TextStreamTest extends TestCase
         $errors = new ParseExceptionCollection();
         $text = "\r\n";
         $text = new TextStream($text, $errors);
-        $this->assertEquals(1, $text->length);
+        self::assertEquals(1, $text->length);
         $ch = $text->consume();
-        $this->assertEquals("\n", $ch);
+        self::assertEquals("\n", $ch);
         self::assertFalse($text->hasMore());
 
         $text = "\0";
         $text = new TextStream($text, $errors);
-        $this->assertEquals(3, $text->length);
+        self::assertEquals(3, $text->length);
         $ch = '';
         while ($text->hasMore()) {
             $ch .= $text->consume();
         }
-        $this->assertEquals("\u{FFFD}", $ch);
+        self::assertEquals("\u{FFFD}", $ch);
     }
 
     public function testConsume_eofThrowsException(): void
@@ -46,8 +46,8 @@ class TextStreamTest extends TestCase
         $text = new TextStream($text, $errors);
         $result = $text->matchRegex('/\d+/', true);
         self::assertTrue($result->success);
-        $this->assertEquals('123', $result->value);
-        $this->assertEquals(3, $result->offset);
+        self::assertEquals('123', $result->value);
+        self::assertEquals(3, $result->offset);
     }
 
     public function testRecordParseException(): void
@@ -55,24 +55,24 @@ class TextStreamTest extends TestCase
         $errors = new ParseExceptionCollection();
         $text = new TextStream('港', $errors);
         $text->recordParseException();
-        $this->assertCount(1, $errors);
+        self::assertCount(1, $errors);
         $error = $errors->get(0);
-        $this->assertEquals('Unexpected character "港".', $error->getMessage());
-        $this->assertEquals(0, $error->position);
+        self::assertEquals('Unexpected character "港".', $error->getMessage());
+        self::assertEquals(0, $error->position);
 
         while ($text->hasMore()) {
             $text->consume();
         }
         $text->recordParseException('Custom message.');
-        $this->assertCount(2, $errors);
+        self::assertCount(2, $errors);
         $error = $errors->get(1);
-        $this->assertEquals('Custom message.', $error->getMessage());
-        $this->assertEquals(3, $error->position);
+        self::assertEquals('Custom message.', $error->getMessage());
+        self::assertEquals(3, $error->position);
 
         $text->recordParseException();
-        $this->assertCount(3, $errors);
+        self::assertCount(3, $errors);
         $error = $errors->get(2);
-        $this->assertEquals('Unexpected end of input.', $error->getMessage());
-        $this->assertEquals(3, $error->position);
+        self::assertEquals('Unexpected end of input.', $error->getMessage());
+        self::assertEquals(3, $error->position);
     }
 }

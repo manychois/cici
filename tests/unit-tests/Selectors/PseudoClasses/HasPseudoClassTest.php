@@ -45,6 +45,6 @@ class HasPseudoClassTest extends TestCase
         $relativeSelector = new RelativeSelector(Combinator::Descendant, new ClassSelector('a'));
         $selector = new HasPseudoClass($relativeSelector);
 
-        $this->assertEquals(':has(.a)', $selector->__toString());
+        self::assertEquals(':has(.a)', $selector->__toString());
     }
 }

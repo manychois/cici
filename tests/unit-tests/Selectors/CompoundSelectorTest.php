@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manychois\CiciTests\UnitTests\Selectors;
 
-use Manychois\Cici\Matching\AbstractMatchContext;
 use Manychois\Cici\Matching\DomNodeMatchContext;
 use Manychois\Cici\Parsing\WqName;
 use Manychois\Cici\Selectors\ClassSelector;
@@ -47,10 +46,10 @@ class CompoundSelectorTest extends TestCase
     #[DataProvider('provideMatches')]
     public function testMatches(
         CompoundSelector $selector,
-        AbstractMatchContext $context,
-        object $target,
+        DomNodeMatchContext $context,
+        \DOMNode $target,
         bool $expected
     ): void {
-        $this->assertEquals($expected, $selector->matches($context, $target));
+        self::assertEquals($expected, $selector->matches($context, $target));
     }
 }

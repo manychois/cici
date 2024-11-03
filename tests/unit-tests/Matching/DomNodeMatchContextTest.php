@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Manychois\CiciTests\UnitTests\Matching;
 
-use Manychois\Cici\Matching\AbstractMatchContext;
 use Manychois\Cici\Matching\DomNodeMatchContext;
 use Manychois\Cici\Matching\NodeType;
 use Manychois\Cici\Parsing\WqName;
@@ -252,9 +251,9 @@ class DomNodeMatchContextTest extends TestCase
 
         $context = new DomNodeMatchContext($html, $html, []);
         $children = \iterator_to_array($context->loopChildren($html));
-        $this->assertCount(2, $children);
-        $this->assertSame($head, $children[0]);
-        $this->assertSame($body, $children[1]);
+        self::assertCount(2, $children);
+        self::assertSame($head, $children[0]);
+        self::assertSame($body, $children[1]);
     }
 
     public function testLoopDescendants(): void
@@ -382,17 +381,17 @@ class DomNodeMatchContextTest extends TestCase
         ];
 
         $context = new DomNodeMatchContext($html, $html, $nsLookup);
-        $this->assertEquals('en', $context->getAttributeValue($html, 'lang'));
+        self::assertEquals('en', $context->getAttributeValue($html, 'lang'));
         $wqName = new WqName(false, null, 'lang');
-        $this->assertEquals('en', $context->getAttributeValue($html, $wqName));
+        self::assertEquals('en', $context->getAttributeValue($html, $wqName));
         $wqName = new WqName(true, null, 'lang');
-        $this->assertEquals('en', $context->getAttributeValue($html, $wqName));
+        self::assertEquals('en', $context->getAttributeValue($html, $wqName));
         $wqName = new WqName(true, 'a', 'lang');
-        $this->assertEquals('zh-Hant', $context->getAttributeValue($html, $wqName));
+        self::assertEquals('zh-Hant', $context->getAttributeValue($html, $wqName));
         $wqName = new WqName(true, 'b', 'lang');
-        $this->assertEquals('zh-Hans', $context->getAttributeValue($html, $wqName));
+        self::assertEquals('zh-Hans', $context->getAttributeValue($html, $wqName));
         $wqName = new WqName(true, '*', 'lang');
-        $this->assertEquals('zh-Hant', $context->getAttributeValue($html, $wqName));
+        self::assertEquals('zh-Hant', $context->getAttributeValue($html, $wqName));
     }
 
     public function testGetAttributeValue_errorOnInvalidPrefix(): void
@@ -419,7 +418,7 @@ class DomNodeMatchContextTest extends TestCase
         WqName $wqName,
         bool $expected
     ): void {
-        $this->assertSame($expected, $context->matchElementType($element, $wqName));
+        self::assertSame($expected, $context->matchElementType($element, $wqName));
     }
 
     public function testMatchElementType_errorOnInvalidPrefix(): void
@@ -537,7 +536,7 @@ class DomNodeMatchContextTest extends TestCase
     }
 
     #[DataProvider('provideIsActuallyDisabled')]
-    public function testIsActuallyDisabled(DomNodeMatchContext $context, object $target, bool $expected): void
+    public function testIsActuallyDisabled(DomNodeMatchContext $context, \DOMNode $target, bool $expected): void
     {
         static::assertSame($expected, $context->isActuallyDisabled($target));
     }
@@ -559,8 +558,11 @@ class DomNodeMatchContextTest extends TestCase
         $context = new DomNodeMatchContext($form, $form, []);
 
         $ta1 = $doc->getElementById('ta1');
+        \assert($ta1 !== null);
         $ta2 = $doc->getElementById('ta2');
+        \assert($ta2 !== null);
         $ta3 = $doc->getElementById('ta3');
+        \assert($ta3 !== null);
 
         static::assertTrue($context->isReadWritable($ta1));
         static::assertFalse($context->isReadWritable($ta2));
@@ -575,7 +577,7 @@ class DomNodeMatchContextTest extends TestCase
         static::assertFalse($actual);
     }
 
-    private function createSimpleMatchContext(): AbstractMatchContext
+    private function createSimpleMatchContext(): DomNodeMatchContext
     {
         $doc = new \DOMDocument();
         $html = $doc->createElement('html');

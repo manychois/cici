@@ -252,8 +252,8 @@ class SelectorParserTest extends TestCase
     ): void {
         $tokenStream = $this->convertToTokenStream($input);
         $wqName = $this->parser->tryParseWqName($tokenStream, $allowWildcastLocalName);
-        $this->assertSame($expectedJson, Json::encode($wqName));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($wqName));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParsePseudoElementSelector')]
@@ -263,8 +263,8 @@ class SelectorParserTest extends TestCase
         // Consume the first colon
         $tokenStream->tryConsume();
         $pseudoElement = $this->parser->tryParsePseudoElementSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($pseudoElement));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($pseudoElement));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideParseAttributeSelector')]
@@ -274,8 +274,8 @@ class SelectorParserTest extends TestCase
         // Consume the first left square bracket
         $tokenStream->tryConsume();
         $attributeSelector = $this->parser->parseAttributeSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($attributeSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($attributeSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideParseAttributeSelector_invalid')]
@@ -294,8 +294,8 @@ class SelectorParserTest extends TestCase
     {
         $tokenStream = $this->convertToTokenStream($input);
         $subclassSelector = $this->parser->tryParseSubclassSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($subclassSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($subclassSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParseSubclassSelector_invalid')]
@@ -312,8 +312,8 @@ class SelectorParserTest extends TestCase
     {
         $tokenStream = $this->convertToTokenStream($input);
         $typeSelector = $this->parser->tryParseTypeSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($typeSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($typeSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParsePseudoCompoundSelector')]
@@ -321,8 +321,8 @@ class SelectorParserTest extends TestCase
     {
         $tokenStream = $this->convertToTokenStream($input);
         $typeSelector = $this->parser->tryParsePseudoCompoundSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($typeSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($typeSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParseCompoundSelector')]
@@ -330,8 +330,8 @@ class SelectorParserTest extends TestCase
     {
         $tokenStream = $this->convertToTokenStream($input);
         $typeSelector = $this->parser->tryParseCompoundSelector($tokenStream, false);
-        $this->assertSame($expectedJson, Json::encode($typeSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($typeSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParseComplexSelector')]
@@ -339,8 +339,8 @@ class SelectorParserTest extends TestCase
     {
         $tokenStream = $this->convertToTokenStream($input);
         $typeSelector = $this->parser->tryParseComplexSelector($tokenStream, $real, false);
-        $this->assertSame($expectedJson, Json::encode($typeSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($typeSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParseCommaSeparatedList')]
@@ -353,8 +353,8 @@ class SelectorParserTest extends TestCase
             false
         );
         $typeSelector = $this->parser->tryParseCommaSeparatedList($tokenStream, $parseComplexSelector);
-        $this->assertSame($expectedJson, Json::encode($typeSelector));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($typeSelector));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     public function testParseSelectorList(): void
@@ -362,7 +362,7 @@ class SelectorParserTest extends TestCase
         $input = ' a, .b, #c ';
         $tokenStream = $this->convertToTokenStream($input);
         $selectorList = $this->parser->parseSelectorList($tokenStream);
-        $this->assertSame(
+        self::assertSame(
             '{"selectors":[{"selectors":[{"type":"type","wqName":{"localName":"a"}}],"type":"compound"},' .
                 '{"selectors":[{"className":"b","type":"class"}],"type":"compound"},' .
                 '{"selectors":[{"id":"c","type":"id"}],"type":"compound"}],"type":"or"}',

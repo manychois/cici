@@ -31,6 +31,6 @@ class ParseExceptionCollectionTest extends TestCase
             $result[] = $error;
         }
 
-        $this->assertEquals([$a, $b], $result);
+        self::assertEquals([$a, $b], $result);
     }
 }

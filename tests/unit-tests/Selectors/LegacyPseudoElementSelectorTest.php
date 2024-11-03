@@ -12,6 +12,6 @@ class LegacyPseudoElementSelectorTest extends TestCase
     public function testToString(): void
     {
         $selector = new LegacyPseudoElementSelector('before');
-        $this->assertEquals(':before', $selector->__toString());
+        self::assertEquals(':before', $selector->__toString());
     }
 }

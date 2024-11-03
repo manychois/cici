@@ -62,11 +62,11 @@ class TokenTest extends TestCase
     {
         $input = 'a b';
         $escaped = AbstractToken::escape($input, '/\s/');
-        $this->assertSame('a\20 b', $escaped);
+        self::assertSame('a\20 b', $escaped);
 
         $input = "a\u{10FFFF}b";
         $escaped = AbstractToken::escape($input, '/[^a-z]/u');
-        $this->assertSame('a\10FFFFb', $escaped);
+        self::assertSame('a\10FFFFb', $escaped);
     }
 
     public function testEscape_invalidCharacter(): void
@@ -80,12 +80,12 @@ class TokenTest extends TestCase
     #[DataProvider('provideEscapeIdent')]
     public function testEscapeIdent(string $from, string $to): void
     {
-        $this->assertSame($to, AbstractToken::escapeIdent($from));
+        self::assertSame($to, AbstractToken::escapeIdent($from));
     }
 
     #[DataProvider('provideToString')]
     public function testToString(AbstractToken $token, string $expected): void
     {
-        $this->assertSame($expected, $token->__toString());
+        self::assertSame($expected, $token->__toString());
     }
 }

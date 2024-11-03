@@ -43,12 +43,12 @@ class AnbNotationTest extends TestCase
     public function testMatches(int $a, int $b, int $index, bool $expected): void
     {
         $anb = new AnbNotation($a, $b);
-        $this->assertSame($expected, $anb->matches($index));
+        self::assertSame($expected, $anb->matches($index));
     }
 
     #[DataProvider('provideToString')]
     public function testToString(AnbNotation $anb, string $expected): void
     {
-        $this->assertSame($expected, $anb->__toString());
+        self::assertSame($expected, $anb->__toString());
     }
 }

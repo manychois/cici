@@ -63,11 +63,11 @@ class ForgivingSelectorListTest extends TestCase
     #[DataProvider('provideMatches')]
     public function testMatches(
         ForgivingSelectorList $selector,
-        AbstractMatchContext $context,
-        object $target,
+        DomNodeMatchContext $context,
+        \DOMNode $target,
         bool $expected
     ): void {
-        $this->assertEquals($expected, $selector->matches($context, $target));
+        self::assertEquals($expected, $selector->matches($context, $target));
     }
 
     public function testToString(): void
@@ -76,6 +76,6 @@ class ForgivingSelectorListTest extends TestCase
         $two = new ClassSelector('two');
         $fsList = new ForgivingSelectorList([$one, $two]);
 
-        $this->assertEquals('.one,.two', $fsList->__toString());
+        self::assertEquals('.one,.two', $fsList->__toString());
     }
 }
