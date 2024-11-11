@@ -94,8 +94,8 @@ final readonly class DomQuery
         $root = $this->getRoot($scope);
         $selectorList = $this->parseSelectorList($selector);
         $context = new DomNodeMatchContext($root, $scope, $nsLookup);
-        foreach ($context->loopDescendants($scope, false) as $child) {
-            if (!($child instanceof \DOMElement) || !$selectorList->matches($context, $child)) {
+        foreach ($context->loopDescendantElements($scope) as $child) {
+            if (!$selectorList->matches($context, $child)) {
                 continue;
             }
 

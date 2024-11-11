@@ -144,6 +144,15 @@ abstract class AbstractMatchContext
     abstract public function loopDescendants(object $target, bool $includeSelf): \Generator;
 
     /**
+     * Loops through all the descendant elements of a node.
+     *
+     * @param TNode $target The node to start from.
+     *
+     * @return \Generator<int,TNode> All the descendant elements.
+     */
+    abstract public function loopDescendantElements(object $target): \Generator;
+
+    /**
      * Loops through all the possible nodes that can be on the left side of a combinator.
      *
      * @param TNode      $target     The node on the right side of the combinator.

@@ -2,6 +2,14 @@
 
 Cici is a PHP library which lets you use CSS selector to locate elements in an HTML document.
 
+## Features
+
+- Wide support of CSS3 selector syntax, e.g. `.home dl > dd:nth-child(3n+1 of :has([href$="s.php"]))`.
+- Support for namespace checking in element names and attribute names, e.g. `svg|circle`.
+- Complete CSS selector parser written in PHP.
+- No dependency on external libraries.
+- Write your own DOM library with CSS selector support by implementing `Manychois\Cici\Matching\AbstractMatchContext`.
+
 ## Installation
 
 ```bash
@@ -144,5 +152,6 @@ Since everything is written in PHP, this allows a wider support of CSS selector 
 However, this also means that the performance is not comparable to the native PHP functions,
 e.g. `Document->getElementById()`, `DOMXPath->query()`.
 
-In a basic performance test, this library is about 2x to 10x slower than `DOMXPath->query()`.
+In a basic performance test, this library can be 2x to 10x slower than equilvalent `DOMXPath->query()`.
+As long as you are fine with the performance of a native PHP foreach loop, this library should be good enough for you.
 You can run `composer run benchmark` to see the performance comparison.

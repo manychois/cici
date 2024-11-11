@@ -342,6 +342,44 @@ class DomNodeMatchContext extends AbstractMatchContext
     /**
      * @inheritDoc
      *
+     * @return \Generator<int,\DOMElement>
+     */
+    #[\Override]
+    public function loopDescendantElements(object $target): \Generator
+    {
+        $current = null;
+        if (
+            $target instanceof \DOMDocument ||
+            $target instanceof \DOMDocumentFragment ||
+            $target instanceof \DOMElement
+        ) {
+            $current = $target->firstElementChild;
+        }
+        while ($current !== null) {
+            yield $current;
+
+            if ($current->firstElementChild !== null) {
+                $current = $current->firstElementChild;
+            } elseif ($current->nextElementSibling !== null) {
+                $current = $current->nextElementSibling;
+            } else {
+                while ($current->parentElement?->nextElementSibling === null) {
+                    $current = $current->parentElement;
+                    if ($current === $target || $current === null) {
+                        $current = null;
+
+                        break 2;
+                    }
+                }
+                \assert($current->parentElement !== null);
+                $current = $current->parentElement->nextElementSibling;
+            }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     *
      * @return \Generator<int,\DOMElement|\DOMDocumentFragment>
      */
     #[\Override]
@@ -420,13 +458,9 @@ class DomNodeMatchContext extends AbstractMatchContext
     #[\Override]
     public function matchElementType(object $target, WqName $wqName): bool
     {
-        if (!($target instanceof \DOMElement)) {
-            return false;
-        }
-
+        \assert($target instanceof \DOMElement);
         $namespaceUri = null;
-        $localName = $wqName->localName;
-        $isLocalNameMatched = $localName === '*' || $target->localName === $localName;
+        $isLocalNameMatched = $target->localName === $wqName->localName || $wqName->localName === '*';
         if ($wqName->prefixSpecified) {
             if ($wqName->prefix !== null) {
                 if ($wqName->prefix === '*') {
