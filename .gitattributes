@@ -5,6 +5,7 @@
 /dev-notes.md        export-ignore
 /docker-compose.yaml export-ignore
 /Dockerfile          export-ignore
+/phpbench.json       export-ignore
 /phpcs.xml           export-ignore
 /phpstan.dist.neon   export-ignore
 /phpunit.xml         export-ignore

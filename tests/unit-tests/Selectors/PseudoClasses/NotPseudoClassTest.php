@@ -34,6 +34,6 @@ class NotPseudoClassTest extends TestCase
         $inner = new ClassSelector('a');
         $selector = new NotPseudoClass($inner);
 
-        $this->assertEquals(':not(.a)', $selector->__toString());
+        self::assertEquals(':not(.a)', $selector->__toString());
     }
 }

@@ -29,9 +29,9 @@ class UnknownPseudoClassSelectorTest extends TestCase
     public function testToString(): void
     {
         $selector = new UnknownPseudoClassSelector('next-gen', true, new StringToken('foo', 0, 5));
-        $this->assertEquals(':next-gen("foo")', $selector->__toString());
+        self::assertEquals(':next-gen("foo")', $selector->__toString());
 
         $selector = new UnknownPseudoClassSelector('next-gen', false);
-        $this->assertEquals(':next-gen', $selector->__toString());
+        self::assertEquals(':next-gen', $selector->__toString());
     }
 }

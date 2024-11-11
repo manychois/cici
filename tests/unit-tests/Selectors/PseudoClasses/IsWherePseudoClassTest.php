@@ -39,6 +39,6 @@ class IsWherePseudoClassTest extends TestCase
         $inner = new ForgivingSelectorList([new ClassSelector('a'), new ClassSelector('b')]);
         $selector = new IsWherePseudoClass('where', $inner);
 
-        $this->assertEquals(':where(.a,.b)', $selector->__toString());
+        self::assertEquals(':where(.a,.b)', $selector->__toString());
     }
 }

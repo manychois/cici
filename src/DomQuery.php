@@ -64,20 +64,11 @@ final readonly class DomQuery
      */
     public function query(\DOMNode $scope, string $selector, array $nsLookup = []): ?\DOMElement
     {
-        if ($scope instanceof \DOMDocument || $scope instanceof \DOMDocumentFragment || $scope instanceof \DOMElement) {
-            $root = $this->getRoot($scope);
-            $selectorList = $this->parseSelectorList($selector);
-            $context = new DomNodeMatchContext($root, $scope, $nsLookup);
-            foreach ($context->loopDescendants($scope, false) as $child) {
-                if ($child instanceof \DOMElement && $selectorList->matches($context, $child)) {
-                    return $child;
-                }
-            }
-
-            return null;
+        foreach ($this->queryAll($scope, $selector, $nsLookup) as $element) {
+            return $element;
         }
 
-        throw new \InvalidArgumentException('Invalid scope node type.');
+        return null;
     }
 
     /**
@@ -103,8 +94,8 @@ final readonly class DomQuery
         $root = $this->getRoot($scope);
         $selectorList = $this->parseSelectorList($selector);
         $context = new DomNodeMatchContext($root, $scope, $nsLookup);
-        foreach ($context->loopDescendants($scope, false) as $child) {
-            if (!($child instanceof \DOMElement) || !$selectorList->matches($context, $child)) {
+        foreach ($context->loopDescendantElements($scope) as $child) {
+            if (!$selectorList->matches($context, $child)) {
                 continue;
             }
 

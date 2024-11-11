@@ -328,20 +328,52 @@ class DomNodeMatchContext extends AbstractMatchContext
             yield $target;
         }
 
-        /**
-         * @var array<int,\DOMNode> $nodes
-         */
-        $nodes = \iterator_to_array($target->childNodes);
-        while (\count($nodes) > 0) {
-            $node = \array_shift($nodes);
+        foreach ($target->childNodes as $child) {
+            yield $child;
 
-            yield $node;
+            if (!($child instanceof \DOMElement)) {
+                continue;
+            }
 
-            /**
-             * @var array<int,\DOMNode> $subNodes
-             */
-            $subNodes = \iterator_to_array($node->childNodes);
-            \array_splice($nodes, 0, 0, $subNodes);
+            yield from $this->loopDescendants($child, false);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return \Generator<int,\DOMElement>
+     */
+    #[\Override]
+    public function loopDescendantElements(object $target): \Generator
+    {
+        $current = null;
+        if (
+            $target instanceof \DOMDocument ||
+            $target instanceof \DOMDocumentFragment ||
+            $target instanceof \DOMElement
+        ) {
+            $current = $target->firstElementChild;
+        }
+        while ($current !== null) {
+            yield $current;
+
+            if ($current->firstElementChild !== null) {
+                $current = $current->firstElementChild;
+            } elseif ($current->nextElementSibling !== null) {
+                $current = $current->nextElementSibling;
+            } else {
+                while ($current->parentElement?->nextElementSibling === null) {
+                    $current = $current->parentElement;
+                    if ($current === $target || $current === null) {
+                        $current = null;
+
+                        break 2;
+                    }
+                }
+                \assert($current->parentElement !== null);
+                $current = $current->parentElement->nextElementSibling;
+            }
         }
     }
 
@@ -426,13 +458,9 @@ class DomNodeMatchContext extends AbstractMatchContext
     #[\Override]
     public function matchElementType(object $target, WqName $wqName): bool
     {
-        if (!($target instanceof \DOMElement)) {
-            return false;
-        }
-
+        \assert($target instanceof \DOMElement);
         $namespaceUri = null;
-        $localName = $wqName->localName;
-        $isLocalNameMatched = $localName === '*' || $target->localName === $localName;
+        $isLocalNameMatched = $target->localName === $wqName->localName || $wqName->localName === '*';
         if ($wqName->prefixSpecified) {
             if ($wqName->prefix !== null) {
                 if ($wqName->prefix === '*') {

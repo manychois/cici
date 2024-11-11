@@ -218,9 +218,9 @@ class TypedChildIndexedPseudoClassTest extends TestCase
     public function testToString(): void
     {
         $selector = new TypedChildIndexedPseudoClass('first-of-type', null);
-        $this->assertSame(':first-of-type', $selector->__toString());
+        self::assertSame(':first-of-type', $selector->__toString());
 
         $selector = new TypedChildIndexedPseudoClass('nth-of-type', new AnbNotation(2, 1));
-        $this->assertSame(':nth-of-type(2n+1)', $selector->__toString());
+        self::assertSame(':nth-of-type(2n+1)', $selector->__toString());
     }
 }

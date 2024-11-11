@@ -29,6 +29,6 @@ class PseudoElementSelectorTest extends TestCase
     public function testToString(): void
     {
         $selector = new PseudoElementSelector('before', false);
-        $this->assertEquals('::before', $selector->__toString());
+        self::assertEquals('::before', $selector->__toString());
     }
 }

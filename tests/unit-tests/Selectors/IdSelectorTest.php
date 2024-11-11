@@ -31,9 +31,9 @@ class IdSelectorTest extends TestCase
     public function testToString(): void
     {
         $idSelector = new IdSelector('one');
-        $this->assertEquals('#one', $idSelector->__toString());
+        self::assertEquals('#one', $idSelector->__toString());
 
         $idSelector = new IdSelector('#a.b');
-        $this->assertEquals('#\23 a\2E b', $idSelector->__toString());
+        self::assertEquals('#\23 a\2E b', $idSelector->__toString());
     }
 }

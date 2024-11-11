@@ -67,6 +67,6 @@ class ComplexSelectorTest extends TestCase
             Combinator::SubsequentSibling,
         ]);
 
-        $this->assertEquals('.one>.two||.three .four+.five~.six', $selector->__toString());
+        self::assertEquals('.one>.two||.three .four+.five~.six', $selector->__toString());
     }
 }

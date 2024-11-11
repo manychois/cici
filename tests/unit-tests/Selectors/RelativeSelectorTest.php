@@ -41,9 +41,9 @@ class RelativeSelectorTest extends TestCase
     public function testToString(): void
     {
         $selector = new RelativeSelector(Combinator::Child, new ClassSelector('a'));
-        $this->assertEquals('>.a', $selector->__toString());
+        self::assertEquals('>.a', $selector->__toString());
 
         $selector = new RelativeSelector(Combinator::Descendant, new ClassSelector('a'));
-        $this->assertEquals('.a', $selector->__toString());
+        self::assertEquals('.a', $selector->__toString());
     }
 }

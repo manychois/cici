@@ -192,12 +192,12 @@ class ChildIndexedPseudoClassTest extends TestCase
     public function testToString(): void
     {
         $selector = new ChildIndexedPseudoClass('first-child', null);
-        $this->assertSame(':first-child', $selector->__toString());
+        self::assertSame(':first-child', $selector->__toString());
 
         $selector = new ChildIndexedPseudoClass('nth-child', new AnbNotation(2, 1));
-        $this->assertSame(':nth-child(2n+1)', $selector->__toString());
+        self::assertSame(':nth-child(2n+1)', $selector->__toString());
 
         $selector = new ChildIndexedPseudoClass('nth-child', new AnbNotation(2, 1), new ClassSelector('foo'));
-        $this->assertSame(':nth-child(2n+1 of .foo)', $selector->__toString());
+        self::assertSame(':nth-child(2n+1 of .foo)', $selector->__toString());
     }
 }

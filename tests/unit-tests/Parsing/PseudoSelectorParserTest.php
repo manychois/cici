@@ -40,19 +40,20 @@ class PseudoSelectorParserTest extends TestCase
 
         yield [':"bad token"', 'null', 1];
 
-        $compound = static fn (...$s): string => \sprintf('{"selectors":[%s],"type":"compound"}', \implode(',', $s));
-        $complex = static fn ($c, ...$s): string => \sprintf(
+        $compound = static fn (string ...$s): string =>
+            \sprintf('{"selectors":[%s],"type":"compound"}', \implode(',', $s));
+        $complex = static fn (string $c, string ...$s): string => \sprintf(
             '{"combinators":[%s],"selectors":[%s],"type":"complex"}',
             $c,
             \implode(',', $s)
         );
-        $relative = static fn ($c, $s): string => \sprintf(
+        $relative = static fn (string $c, string $s): string => \sprintf(
             '{"combinator":"%s","selector":%s,"type":"relative"}',
             $c,
             $s
         );
-        $or = static fn (...$s): string => \sprintf('{"selectors":[%s],"type":"or"}', \implode(',', $s));
-        $psSelector = static fn ($n, $s): string => \sprintf(
+        $or = static fn (string ...$s): string => \sprintf('{"selectors":[%s],"type":"or"}', \implode(',', $s));
+        $psSelector = static fn (string $n, string $s): string => \sprintf(
             '{"name":"%s","selector":%s,"type":"pseudo-class"}',
             $n,
             $s
@@ -167,8 +168,8 @@ class PseudoSelectorParserTest extends TestCase
         // Consume the first colon
         $tokenStream->tryConsume();
         $pseudoClass = $this->parser->tryParsePseudoClassSelector($tokenStream);
-        $this->assertSame($expectedJson, Json::encode($pseudoClass));
-        $this->assertSame($indexAfter, $tokenStream->position);
+        self::assertSame($expectedJson, Json::encode($pseudoClass));
+        self::assertSame($indexAfter, $tokenStream->position);
     }
 
     #[DataProvider('provideTryParsePseudoClassSelector_invalid')]
@@ -182,7 +183,7 @@ class PseudoSelectorParserTest extends TestCase
         try {
             $this->parser->tryParsePseudoClassSelector($tokenStream);
         } catch (ParseException $e) {
-            $this->assertSame($indexAfter, $e->position);
+            self::assertSame($indexAfter, $e->position);
 
             throw $e;
         }

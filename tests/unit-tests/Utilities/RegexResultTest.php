@@ -13,18 +13,18 @@ class RegexResultTest extends TestCase
     {
         $result = RegexResult::matches('/\d+/', 'abc123def456', 7, true);
         self::assertTrue($result->success);
-        $this->assertSame('456', $result->value);
-        $this->assertSame(9, $result->offset);
+        self::assertSame('456', $result->value);
+        self::assertSame(9, $result->offset);
 
         $result = RegexResult::matches('/\d+/', 'abcdef');
         self::assertFalse($result->success);
-        $this->assertSame('', $result->value);
-        $this->assertSame(-1, $result->offset);
+        self::assertSame('', $result->value);
+        self::assertSame(-1, $result->offset);
 
         $result = RegexResult::matches('/\d+/', 'abc123def456');
         self::assertTrue($result->success);
-        $this->assertSame('123', $result->value);
-        $this->assertSame(-1, $result->offset);
+        self::assertSame('123', $result->value);
+        self::assertSame(-1, $result->offset);
     }
 
     public function testMatches_invalidPattern(): void

@@ -30,19 +30,21 @@ class DomQueryTest extends TestCase
         $doc->loadHTML($rawHtml);
         $query = new DomQuery();
         $ele = $query->query($doc, 'p');
-        $this->assertSame('Hello, world!', $ele->textContent);
+        \assert($ele !== null);
+        self::assertSame('Hello, world!', $ele->textContent);
 
         $head = $query->query($doc, 'head');
-        $this->assertNotNull($head);
+        self::assertNotNull($head);
 
         $body = $query->query($doc, 'body');
-        $this->assertNotNull($body);
+        self::assertNotNull($body);
 
         $title = $query->query($head, 'title');
-        $this->assertSame('Test', $title->textContent);
+        \assert($title !== null);
+        self::assertSame('Test', $title->textContent);
 
         $title = $query->query($body, 'title');
-        $this->assertNull($title);
+        self::assertNull($title);
     }
 
     public function testQuery2(): void
@@ -52,7 +54,8 @@ class DomQueryTest extends TestCase
         $fragment->append($doc->createElement('p', 'Hello, world!'));
         $query = new DomQuery();
         $ele = $query->query($fragment, ':scope > p');
-        $this->assertSame('Hello, world!', $ele->textContent);
+        \assert($ele !== null);
+        self::assertSame('Hello, world!', $ele->textContent);
     }
 
     public function testQueryInvalidNodeType(): void
@@ -95,9 +98,9 @@ class DomQueryTest extends TestCase
         $doc->loadHTML($rawHtml);
         $query = new DomQuery();
         $elements = \iterator_to_array($query->queryAll($doc, 'p'));
-        $this->assertCount(2, $elements);
-        $this->assertSame('Hello, world!', $elements[0]->textContent);
-        $this->assertSame('Goodbye, world!', $elements[1]->textContent);
+        self::assertCount(2, $elements);
+        self::assertSame('Hello, world!', $elements[0]->textContent);
+        self::assertSame('Goodbye, world!', $elements[1]->textContent);
     }
 
     public function testQuerAllyInvalidNodeType(): void
@@ -129,13 +132,15 @@ class DomQueryTest extends TestCase
         $doc->loadHTML($rawHtml);
         $query = new DomQuery();
         $p = $doc->getElementsByTagName('p')[0];
+        \assert($p instanceof \DOMElement);
         $ele = $query->closest($p, '.a');
-        $this->assertSame('body', $ele->tagName);
+        \assert($ele !== null);
+        self::assertSame('body', $ele->tagName);
 
         $ele = $query->closest($p, 'p');
-        $this->assertSame($p, $ele);
+        self::assertSame($p, $ele);
 
         $ele = $query->closest($p, '.b');
-        $this->assertNull($ele);
+        self::assertNull($ele);
     }
 }
