@@ -513,7 +513,7 @@ class DomNodeMatchContextTest extends TestCase
 
         $printGroup = static fn (array $group): string => \implode(
             ',',
-            \array_map(static fn (\DOMElement $ele): string => $ele->getAttribute('id'), $group)
+            \array_map(static fn ($ele) => $ele instanceof \DOMElement ? $ele->getAttribute('id') : '', $group)
         );
 
         $group = $context->getRadioButtonGroup($radios[0]);

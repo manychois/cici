@@ -158,8 +158,8 @@ class SelectorParserTest extends TestCase
 
     public static function provideTryParseComplexSelector(): \Generator
     {
-        $c = static fn ($s): string => '{"selectors":[' . $s . '],"type":"compound"}';
-        $and = static fn ($s): string => '{"selectors":[' . $s . '],"type":"and"}';
+        $c = static fn (string $s): string => '{"selectors":[' . $s . '],"type":"compound"}';
+        $and = static fn (string $s): string => '{"selectors":[' . $s . '],"type":"and"}';
 
         yield [
             'div > :hover [required]',
