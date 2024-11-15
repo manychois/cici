@@ -355,6 +355,8 @@ class DomNodeMatchContext extends AbstractMatchContext
         ) {
             $current = $target->firstElementChild;
         }
+        $parentElement = static fn (\DOMNode $node): \DOMElement|null =>
+            $node->parentNode instanceof \DOMElement ? $node->parentNode : null;
         while ($current !== null) {
             yield $current;
 
@@ -363,16 +365,17 @@ class DomNodeMatchContext extends AbstractMatchContext
             } elseif ($current->nextElementSibling !== null) {
                 $current = $current->nextElementSibling;
             } else {
-                while ($current->parentElement?->nextElementSibling === null) {
-                    $current = $current->parentElement;
+                // parentElement is available starting PHP 8.3
+                while ($parentElement($current)?->nextElementSibling === null) {
+                    $current = $parentElement($current);
                     if ($current === $target || $current === null) {
                         $current = null;
 
                         break 2;
                     }
                 }
-                \assert($current->parentElement !== null);
-                $current = $current->parentElement->nextElementSibling;
+                \assert($parentElement($current) !== null);
+                $current = $parentElement($current)->nextElementSibling;
             }
         }
     }
@@ -458,7 +461,10 @@ class DomNodeMatchContext extends AbstractMatchContext
     #[\Override]
     public function matchElementType(object $target, WqName $wqName): bool
     {
-        \assert($target instanceof \DOMElement);
+        if (!($target instanceof \DOMElement)) {
+            return false;
+        }
+
         $namespaceUri = null;
         $isLocalNameMatched = $target->localName === $wqName->localName || $wqName->localName === '*';
         if ($wqName->prefixSpecified) {
