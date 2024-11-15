@@ -1,5 +1,7 @@
 # Cici
 
+[![PHP Version Require](https://poser.pugx.org/manychois/cici/require/php)](https://packagist.org/packages/manychois/cici) [![Latest Stable Version](https://poser.pugx.org/manychois/cici/v)](https://packagist.org/packages/manychois/cici) [![License](https://poser.pugx.org/manychois/cici/license)](https://packagist.org/packages/manychois/cici) [![codecov](https://codecov.io/github/manychois/cici/graph/badge.svg?token=0xXKvT7oxq)](https://codecov.io/github/manychois/cici)
+
 Cici is a PHP library which lets you use CSS selector to locate elements in an HTML document.
 
 ## Features
